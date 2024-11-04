@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
@@ -40,10 +40,10 @@ function Dashboard({ user }) {
     return () => clearInterval(interval);
   }, [isStanding]);
 
-  const handleStartStop = async () => {
+  const handleStartStop = useCallback(async () => {
     if (isStanding) {
       const endTime = new Date();
-      const duration = (endTime - startTime) / 1000;
+      const duration = Math.round((endTime - startTime) / 1000);
 
       await addDoc(collection(db, "standingTimes"), {
         userId: user.uid,
@@ -60,7 +60,7 @@ function Dashboard({ user }) {
       setIsStanding(true);
       setStartTime(new Date());
     }
-  };
+  }, [isStanding, startTime, user.uid]);
 
   const handleLogout = () => {
     signOut(auth);
