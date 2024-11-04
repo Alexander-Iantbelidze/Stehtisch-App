@@ -2,25 +2,43 @@ import React, { useState } from 'react';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { 
-  Container, Box, TextField, Button, Typography, Paper 
+  Container, Box, TextField, Button, Typography, Paper, Snackbar
 } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [error, setError] = useState('');
+  const [open, setOpen] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       if (isSignUp) {
         await createUserWithEmailAndPassword(auth, email, password);
+        // Nach erfolgreicher Registrierung wird der Benutzer automatisch eingeloggt
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (error) {
       console.error("Error:", error.message);
+      setError(error.message);
+      setOpen(true);
     }
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpen(false);
   };
 
   return (
@@ -80,6 +98,11 @@ function Login() {
           </Box>
         </Paper>
       </Box>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
