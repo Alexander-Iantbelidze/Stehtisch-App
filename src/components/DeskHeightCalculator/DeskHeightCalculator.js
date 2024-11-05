@@ -66,10 +66,7 @@ const DeskHeightCalculator = () => {
   const [deskHeight, setDeskHeight] = useState(56.5);
 
   useEffect(() => {
-    const heightRange = heightRangeCM.find(sub => sub[0] === height);
-    if (heightRange) {
-      showDeskHeight(height, type);
-    }
+    showDeskHeight(height, type);
   }, [height, type]);
 
   const showDeskHeight = (person_height, type) => {
@@ -96,10 +93,7 @@ const DeskHeightCalculator = () => {
   };
 
   const handleHeightChange = (e) => {
-    const value = parseInt(e.target.value);
-    if (!isNaN(value)) {
-      setHeight(value);
-    }
+    setHeight(parseInt(e.target.value));
   };
 
   return (
@@ -153,7 +147,8 @@ const DeskHeightCalculator = () => {
             name="height" 
             value={height} 
             onChange={handleHeightChange}
-            
+            min="150"
+            max="205"
           />
         </div>
         <div className="form_group">
