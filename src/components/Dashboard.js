@@ -4,9 +4,11 @@ import { signOut } from 'firebase/auth';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { 
   AppBar, Toolbar, Typography, Button, Container, Box, 
-  Paper, CircularProgress, IconButton 
+  Paper, CircularProgress, IconButton, Stack, 
 } from '@mui/material';
 import { PlayArrow, Stop, ExitToApp } from '@mui/icons-material';
+import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
+
 
 function Dashboard({ user }) {
   const [isStanding, setIsStanding] = useState(false);
@@ -79,8 +81,8 @@ function Dashboard({ user }) {
         </Toolbar>
       </AppBar>
       <Container maxWidth="sm">
-        <Box sx={{ my: 4 }}>
-          <Paper elevation={3} sx={{ p: 3, textAlign: 'center'}}>
+        <Stack spacing={3} sx={{ mt: 3 }}>
+          <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
             <Typography variant="h4" gutterBottom>
               Welcome, {user.email}
             </Typography>
@@ -120,7 +122,10 @@ function Dashboard({ user }) {
               {isStanding ? 'Stop Standing' : 'Start Standing'}
             </Button>
           </Paper>
-        </Box>
+          <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
+            <DeskHeightCalculator />
+          </Paper>
+        </Stack>
       </Container>
     </Box>
   );
