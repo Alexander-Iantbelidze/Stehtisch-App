@@ -71,7 +71,7 @@ function Dashboard({ user }) {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            StehTisch App
+            StandStrong
           </Typography>
           <IconButton color="inherit" onClick={handleLogout}>
             <ExitToApp />
@@ -80,7 +80,7 @@ function Dashboard({ user }) {
       </AppBar>
       <Container maxWidth="sm">
         <Box sx={{ my: 4 }}>
-          <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
+          <Paper elevation={3} sx={{ p: 3, textAlign: 'center'}}>
             <Typography variant="h4" gutterBottom>
               Welcome, {user.email}
             </Typography>
