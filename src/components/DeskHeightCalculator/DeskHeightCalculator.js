@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Typography, Box } from '@mui/material';
 import './DeskHeightCalculator.css';
 
 const heightRangeCM = [
@@ -97,8 +98,9 @@ const DeskHeightCalculator = () => {
   };
 
   return (
-    <div className="container">
-      <section className="preview">
+    <Box className="container">
+      
+      <Box className="preview">
         <div className="desk">
           <div className="desk__dynamic_part">
             <div id="desk__top">
@@ -136,11 +138,10 @@ const DeskHeightCalculator = () => {
             <path d="M721.5 0.5H744L780 46L807 110M721.5 0.5L763.5 110M721.5 0.5V10L763.5 123.5M763.5 110H807M763.5 110V123.5M807 110V123.5H763.5" stroke="black" strokeMiterlimit="16" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-      </section>
-
-      <section className="form">
+      </Box>
+      <Box className="form" sx={{ width: '100%', mt: 2 }}>
         <div className="form_group">
-          <label htmlFor="height">Your height (cm)</label>
+          <Typography component="label" htmlFor="height">Your height (cm)</Typography>
           <input 
             type="number"
             id="height" 
@@ -152,14 +153,14 @@ const DeskHeightCalculator = () => {
           />
         </div>
         <div className="form_group">
-          <label htmlFor="type">Position at desk</label>
+          <Typography component="label" htmlFor="type">Position at desk</Typography>
           <select id="type" value={type} onChange={(e) => setType(Number(e.target.value))}>
             <option value={0}>Sitting</option>
             <option value={1}>Standing</option>
           </select>
         </div>
-      </section>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

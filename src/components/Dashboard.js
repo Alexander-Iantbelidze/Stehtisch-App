@@ -9,7 +9,6 @@ import {
 import { PlayArrow, Stop, ExitToApp } from '@mui/icons-material';
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
 
-
 function Dashboard({ user }) {
   const [isStanding, setIsStanding] = useState(false);
   const [startTime, setStartTime] = useState(null);
@@ -80,51 +79,55 @@ function Dashboard({ user }) {
           </IconButton>
         </Toolbar>
       </AppBar>
-      <Container maxWidth="sm">
-        <Stack spacing={3} sx={{ mt: 3 }}>
-          <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
-            <Typography variant="h4" gutterBottom>
-              Welcome, {user.email}
-            </Typography>
-            <Typography variant="h6" gutterBottom>
-              Total standing time: {Math.round(totalStandingTime / 60)} minutes
-            </Typography>
-            <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-              <CircularProgress 
-                variant="determinate" 
-                value={(currentSessionTime / 3600) * 100} 
-                size={200}
-              />
-              <Box
-                sx={{
-                  top: 0,
-                  left: 0,
-                  bottom: 0,
-                  right: 0,
-                  position: 'absolute',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Typography variant="h5" component="div" color="text.secondary">
-                  {Math.floor(currentSessionTime / 60)}:{(currentSessionTime % 60).toString().padStart(2, '0')}
-                </Typography>
+      <Container maxWidth="lg">
+        <Stack container spacing={3} sx={{ mt: 3 }}>
+          <Stack item xs={12} md={6}>
+            <Paper elevation={3} sx={{ p: 3, textAlign: 'center', height: '100%' }}>
+              <Typography variant="h4" gutterBottom>
+                Welcome, {user.email}
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                Total standing time: {Math.round(totalStandingTime / 60)} minutes
+              </Typography>
+              <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                <CircularProgress 
+                  variant="determinate" 
+                  value={(currentSessionTime / 3600) * 100} 
+                  size={200}
+                />
+                <Box
+                  sx={{
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    right: 0,
+                    position: 'absolute',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography variant="h5" component="div" color="text.secondary">
+                    {Math.floor(currentSessionTime / 60)}:{(currentSessionTime % 60).toString().padStart(2, '0')}
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
-            <Button 
-              variant="contained" 
-              color={isStanding ? "secondary" : "primary"} 
-              onClick={handleStartStop}
-              startIcon={isStanding ? <Stop /> : <PlayArrow />}
-              sx={{ mt: 2 }}
-            >
-              {isStanding ? 'Stop Standing' : 'Start Standing'}
-            </Button>
-          </Paper>
-          <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
-            <DeskHeightCalculator />
-          </Paper>
+              <Button 
+                variant="contained" 
+                color={isStanding ? "secondary" : "primary"} 
+                onClick={handleStartStop}
+                startIcon={isStanding ? <Stop /> : <PlayArrow />}
+                sx={{ mt: 2 }}
+              >
+                {isStanding ? 'Stop Standing' : 'Start Standing'}
+              </Button>
+            </Paper>
+          </Stack>
+          <Stack item xs={12} md={6}>
+            <Paper elevation={3} sx={{ p: 3, height: '100%' }}>
+              <DeskHeightCalculator />
+            </Paper>
+          </Stack>
         </Stack>
       </Container>
     </Box>
