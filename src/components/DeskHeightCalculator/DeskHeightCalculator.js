@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Box } from '@mui/material';
+import { Typography, Box, useTheme, useMediaQuery } from '@mui/material';
 import './DeskHeightCalculator.css';
 
 const heightRangeCM = [
@@ -66,6 +66,9 @@ const DeskHeightCalculator = () => {
   const [type, setType] = useState(0); // 0 für sitting, 1 für standing
   const [deskHeight, setDeskHeight] = useState(56.5);
 
+  const theme = useTheme();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
+
   useEffect(() => {
     showDeskHeight(height, type);
   }, [height, type]);
@@ -98,9 +101,23 @@ const DeskHeightCalculator = () => {
   };
 
   return (
-    <Box className="container">
-      
-      <Box className="preview">
+    <Box
+      className="container"
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden', 
+      }}
+    >
+      <Box
+        className="preview"
+        sx={{
+          flex: 1,
+          minHeight: isLargeScreen ? 300 : 200,
+          overflow: 'hidden', 
+        }}
+      >
         <div className="desk">
           <div className="desk__dynamic_part">
             <div id="desk__top">
@@ -139,7 +156,7 @@ const DeskHeightCalculator = () => {
           </svg>
         </div>
       </Box>
-      <Box className="form" sx={{ width: '100%', mt: 2 }}>
+      <Box className="form" sx={{ mt: 2 }}>
         <div className="form_group">
           <Typography component="label" htmlFor="height">Your height (cm)</Typography>
           <input 

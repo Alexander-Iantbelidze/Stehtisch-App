@@ -9,25 +9,23 @@ body {
 }
 
 .container {
-  height: 100%;
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  box-sizing: border-box;
 }
 
 .preview {
   background: #eff5ff;
   width: 100%;
-  aspect-ratio: 16 / 9;
   border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: 20px 0;
+  flex: 1;
+  /* min-height: 300px; */
 }
 
 .desk {
@@ -142,6 +140,7 @@ select:focus, input:focus {
   right: -112px;
   bottom: -1px;
   height: 100%;
+  display: block;
 }
 
 .indicator_height > hr {
@@ -162,16 +161,30 @@ select:focus, input:focus {
   box-sizing: border-box;
 }
 
-@media (max-width: 1024px) {
-  .container {
-    padding: 10px;
+@media (max-width: 1200px) {
+  .desk {
+    transform: scale(0.35);
   }
-  
-  .preview {
-    aspect-ratio: 4 / 3;
-  }
-  
+}
+
+@media (max-width: 900px) {
   .desk {
     transform: scale(0.3);
+  }
+}
+
+@media (max-width: 960px) {
+  .preview {
+    min-height: 200px;
+  }
+
+  .desk__control__display {
+    font-size: 1.5rem;
+  }
+
+  /* Make SVG responsive */
+  svg {
+    width: 100%;
+    height: auto;
   }
 }
