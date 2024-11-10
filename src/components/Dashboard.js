@@ -11,13 +11,14 @@ import {
   Button,
   Stack,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import { PlayArrow, Stop, ExitToApp } from '@mui/icons-material';
 import { auth, db } from '../firebase'; // Passe den Importpfad nach Bedarf an
 import { signOut } from 'firebase/auth';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
+import { Link } from 'react-router-dom';
 
 function Dashboard({ user }) {
   const [isStanding, setIsStanding] = useState(false);
@@ -25,68 +26,120 @@ function Dashboard({ user }) {
   const [totalStandingTime, setTotalStandingTime] = useState(0);
   const [currentSessionTime, setCurrentSessionTime] = useState(0);
 
+  // Additional state variables for statistics
+  const [dailyStandingTime, setDailyStandingTime] = useState(0);
+  const [averageStandingTime, setAverageStandingTime] = useState(0);
+  const [standingSessionsCount, setStandingSessionsCount] = useState(0);
+  const [longestSessionTime, setLongestSessionTime] = useState(0);
+
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
-  useEffect(() => {
-    const fetchStandingTime = async () => {
-      const q = query(collection(db, "standingTimes"), where("userId", "==", user.uid));
-      const querySnapshot = await getDocs(q);
-      let total = 0;
-      querySnapshot.forEach((doc) => {
-        total += doc.data().duration;
-      });
-      setTotalStandingTime(total);
-    };
+  
+  const fetchStandingTime = useCallback(async () => {
+    const q = query(collection(db, 'standingTimes'), where('userId', '==', user.uid));
+    const querySnapshot = await getDocs(q);
 
-    fetchStandingTime();
-  }, [user]);
+    let total = 0;
+    let dailyTotal = 0;
+    let sessionCount = 0;
+    let longestSession = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const duration = data.duration; // Duration in seconds
+      const timestamp = data.startTime.toDate();
+
+      // Total standing time
+      total += duration;
+
+      // Count the session
+      sessionCount += 1;
+
+      // Check for longest session
+      if (duration > longestSession) {
+        longestSession = duration;
+      }
+
+      // Calculate daily standing time
+      if (timestamp >= today) {
+        dailyTotal += duration;
+      }
+    });
+
+    // Average standing time
+    const avgTime = sessionCount > 0 ? total / sessionCount : 0;
+
+    // Update state variables
+    setTotalStandingTime(total);
+    setDailyStandingTime(dailyTotal);
+    setAverageStandingTime(avgTime);
+    setStandingSessionsCount(sessionCount);
+    setLongestSessionTime(longestSession);
+  }, [user.uid]);
 
   useEffect(() => {
     let interval;
     if (isStanding) {
       interval = setInterval(() => {
-        setCurrentSessionTime(prev => prev + 1);
+        setCurrentSessionTime((prev) => prev + 1);
       }, 1000);
-    } else {
-      setCurrentSessionTime(0);
     }
     return () => clearInterval(interval);
   }, [isStanding]);
+
+
+  useEffect(() => {
+    fetchStandingTime();
+  }, [fetchStandingTime]);
 
   const handleStartStop = useCallback(async () => {
     if (isStanding) {
       const endTime = new Date();
       const duration = Math.round((endTime - startTime) / 1000);
 
-      await addDoc(collection(db, "standingTimes"), {
+      await addDoc(collection(db, 'standingTimes'), {
         userId: user.uid,
         startTime: startTime,
         endTime: endTime,
-        duration: duration
+        duration: duration,
       });
 
-      setTotalStandingTime(prevTotal => prevTotal + duration);
+      setTotalStandingTime((prevTotal) => prevTotal + duration);
       setIsStanding(false);
       setStartTime(null);
       setCurrentSessionTime(0);
+
+      await fetchStandingTime();
     } else {
       setIsStanding(true);
       setStartTime(new Date());
     }
-  }, [isStanding, startTime, user.uid]);
+  }, [isStanding, startTime, user.uid, fetchStandingTime]);
 
   const handleLogout = () => {
     signOut(auth);
   };
 
+  // Helper function to format time
+  const formatTime = (timeInSeconds) => {
+    const hrs = Math.floor(timeInSeconds / 3600);
+    const mins = Math.floor((timeInSeconds % 3600) / 60);
+    return `${hrs}h ${mins}m`;
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-      <AppBar position="static">
+      <AppBar position="static" sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            StandStrong
+            StandStrong ©
           </Typography>
+          <Button color="inherit" component={Link} to="/statistics">
+            Statistics
+          </Button>
           <IconButton color="inherit" onClick={handleLogout}>
             <ExitToApp />
           </IconButton>
@@ -128,12 +181,19 @@ function Dashboard({ user }) {
               Welcome, {user.email}
             </Typography>
             <Typography variant="h6" gutterBottom>
-              Total standing time: {Math.round(totalStandingTime / 60)} minutes
+              Total standing time: {formatTime(totalStandingTime)}
             </Typography>
-            <Box sx={{ position: 'relative', display: 'inline-flex', width: '100%', maxWidth: 300 }}>
-              <CircularProgress 
-                variant="determinate" 
-                value={(currentSessionTime / 3600) * 100} 
+            <Box
+              sx={{
+                position: 'relative',
+                display: 'inline-flex',
+                width: '100%',
+                maxWidth: 300,
+              }}
+            >
+              <CircularProgress
+                variant="determinate"
+                value={(currentSessionTime / 3600) * 100}
                 size={isLargeScreen ? 200 : 150}
               />
               <Box
@@ -149,21 +209,42 @@ function Dashboard({ user }) {
                 }}
               >
                 <Typography variant="h5" component="div" color="text.secondary">
-                  {Math.floor(currentSessionTime / 60)}:{(currentSessionTime % 60).toString().padStart(2, '0')}
+                  {Math.floor(currentSessionTime / 60)}:
+                  {(currentSessionTime % 60).toString().padStart(2, '0')}
                 </Typography>
               </Box>
             </Box>
-            <Button 
-              variant="contained" 
-              color={isStanding ? "secondary" : "primary"} 
+            <Button
+              variant="contained"
+              color={isStanding ? 'secondary' : 'primary'}
               onClick={handleStartStop}
               startIcon={isStanding ? <Stop /> : <PlayArrow />}
               sx={{ mt: 2, width: '100%', maxWidth: 200 }}
             >
               {isStanding ? 'Stop Standing' : 'Start Standing'}
             </Button>
+
+            {/* Statistics Overview */}
+            <Box sx={{ mt: 4, width: '100%' }}>
+              <Typography variant="h6">Your Statistics</Typography>
+              <Stack spacing={1} sx={{ mt: 1 }}>
+                <Typography variant="body1">
+                  Daily Standing Time: {formatTime(dailyStandingTime)}
+                </Typography>
+                <Typography variant="body1">
+                  Average Session Time: {formatTime(averageStandingTime)}
+                </Typography>
+                <Typography variant="body1">
+                  Number of Sessions: {standingSessionsCount}
+                </Typography>
+                <Typography variant="body1">
+                  Longest Session: {formatTime(longestSessionTime)}
+                </Typography>
+                {/* You can add more statistics here */}
+              </Stack>
+            </Box>
           </Paper>
-          
+
           {/* Desk Height Calculator */}
           <Paper
             elevation={3}

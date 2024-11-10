@@ -145,7 +145,7 @@ select:focus, input:focus {
 
 .indicator_height > hr {
   height: 100%;
-  width: 1px;
+  width: 3px;
   background: #000;
 }
 
@@ -165,12 +165,14 @@ select:focus, input:focus {
   .desk {
     transform: scale(0.35);
   }
+  
 }
 
 @media (max-width: 900px) {
   .desk {
     transform: scale(0.3);
   }
+  
 }
 
 @media (max-width: 960px) {
