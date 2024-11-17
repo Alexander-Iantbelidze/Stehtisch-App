@@ -133,17 +133,19 @@ function Dashboard({ user }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <AppBar position="static" sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            StandStrong ©
-          </Typography>
-          <Button color="inherit" component={Link} to="/statistics">
-            Statistics
-          </Button>
-          <IconButton color="inherit" onClick={handleLogout}>
-            <ExitToApp />
-          </IconButton>
-        </Toolbar>
+      <Toolbar sx={{ display: 'flex' }}>
+  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+    StandStrong ©
+  </Typography>
+  <Button color="inherit" component={Link} to="/statistics">
+    Statistics
+  </Button>
+  <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
+    <IconButton color="inherit" onClick={handleLogout}>
+      <ExitToApp />
+    </IconButton>
+  </Box>
+</Toolbar>
       </AppBar>
       <Container
         maxWidth="xl"
@@ -198,10 +200,7 @@ function Dashboard({ user }) {
               />
               <Box
                 sx={{
-                  top: 0,
-                  left: 0,
-                  bottom: 0,
-                  right: 0,
+                 inset: 0,
                   position: 'absolute',
                   display: 'flex',
                   alignItems: 'center',
