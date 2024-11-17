@@ -33,8 +33,8 @@ function Statistics({ user }) {
       const statsData = [];
       querySnapshot.forEach((doc) => {
         // Process data for the chart
-        const { duration, timestamp } = doc.data();
-        statsData.push({ date: timestamp.toDate(), standingTime: duration });
+        const { duration, startTime } = doc.data();
+        statsData.push({ date: startTime.toDate(), standingTime: duration });
       });
       setData(statsData);
     };

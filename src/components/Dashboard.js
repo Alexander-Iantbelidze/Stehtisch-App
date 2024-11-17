@@ -23,13 +23,13 @@ import { Link } from 'react-router-dom';
 function Dashboard({ user }) {
   const [isStanding, setIsStanding] = useState(false);
   const [startTime, setStartTime] = useState(null);
-  const [totalStandingTime, setTotalStandingTime] = useState(0);
+  
   const [currentSessionTime, setCurrentSessionTime] = useState(0);
 
   // Additional state variables for statistics
   const [dailyStandingTime, setDailyStandingTime] = useState(0);
   const [averageStandingTime, setAverageStandingTime] = useState(0);
-  const [standingSessionsCount, setStandingSessionsCount] = useState(0);
+  
   const [longestSessionTime, setLongestSessionTime] = useState(0);
 
   const theme = useTheme();
@@ -73,10 +73,10 @@ function Dashboard({ user }) {
     const avgTime = sessionCount > 0 ? total / sessionCount : 0;
 
     // Update state variables
-    setTotalStandingTime(total);
+    
     setDailyStandingTime(dailyTotal);
     setAverageStandingTime(avgTime);
-    setStandingSessionsCount(sessionCount);
+   
     setLongestSessionTime(longestSession);
   }, [user.uid]);
 
@@ -107,7 +107,7 @@ function Dashboard({ user }) {
         duration: duration,
       });
 
-      setTotalStandingTime((prevTotal) => prevTotal + duration);
+      
       setIsStanding(false);
       setStartTime(null);
       setCurrentSessionTime(0);
@@ -182,9 +182,7 @@ function Dashboard({ user }) {
             <Typography variant="h4" gutterBottom>
               Welcome, {user.email}
             </Typography>
-            <Typography variant="h6" gutterBottom>
-              Total standing time: {formatTime(totalStandingTime)}
-            </Typography>
+            
             <Box
               sx={{
                 position: 'relative',
@@ -233,9 +231,7 @@ function Dashboard({ user }) {
                 <Typography variant="body1">
                   Average Session Time: {formatTime(averageStandingTime)}
                 </Typography>
-                <Typography variant="body1">
-                  Number of Sessions: {standingSessionsCount}
-                </Typography>
+                
                 <Typography variant="body1">
                   Longest Session: {formatTime(longestSessionTime)}
                 </Typography>
