@@ -3,15 +3,14 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC1o_auc4XDZJCd6seQcoYwa__33lpM1i0",
-  authDomain: "stehtisch-app.firebaseapp.com",
-  projectId: "stehtisch-app",
-  storageBucket: "stehtisch-app.firebasestorage.app",
-  messagingSenderId: "964408181792",
-  appId: "1:964408181792:web:7ced2742b16fb57f6ba845",
-  measurementId: "G-GYVKRC7XDZ"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
-
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

@@ -108,16 +108,16 @@ function Statistics({ user }) {
 
   const fetchUsernames = async (userIds) => {
     const usernamesMap = {};
-    
+
     if (userIds.length === 0) {
-      return usernamesMap; // Leeres Objekt zurückgeben, wenn keine userIds vorhanden sind
+      return usernamesMap;
     }
-  
+
     const usersRef = collection(db, 'users');
     const usersQuery = query(usersRef, where('__name__', 'in', userIds));
     const usersSnapshot = await getDocs(usersQuery);
     usersSnapshot.forEach((doc) => {
-      usernamesMap[doc.id] = doc.data().username || doc.data().email;
+      usernamesMap[doc.id] = doc.data().username || 'Unbekannter Benutzer';
     });
     return usernamesMap;
   };
@@ -151,7 +151,7 @@ function Statistics({ user }) {
           </Typography>
           {rankings.totalStandingTimeRanking.map((item, index) => (
             <Typography key={item.userId}>
-              {index + 1}. {usernames[item.userId] || item.userId} - {formatTime(item.value)}
+              {index + 1}. {usernames[item.userId]} - {formatTime(item.value)}
             </Typography>
           ))}
 

@@ -180,7 +180,7 @@ function Dashboard({ user }) {
             }}
           >
             <Typography variant="h4" gutterBottom>
-              Welcome, {user.email}
+              Welcome, {user.username}
             </Typography>
             
             <Box

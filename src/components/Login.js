@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { auth } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { setDoc, doc } from 'firebase/firestore';
 import { 
   Container, Box, TextField, Button, Typography, Paper, Snackbar
 } from '@mui/material';
@@ -16,6 +17,7 @@ function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
+  const [username, setUsername] = useState('');
 
     // I need to add those 2 also: Error: Firebase: Error (auth/email-already-in-use).
     // Error: Firebase: Error (auth/invalid-credential).
@@ -23,7 +25,13 @@ function Login() {
     e.preventDefault();
     try {
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Benutzername in Firestore speichern
+        await setDoc(doc(db, 'users', user.uid), {
+          username: username,
+        });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -38,6 +46,32 @@ function Login() {
         errorMessage = 'Incorrect password.';
       } else if (error.code === 'auth/weak-password') {
         errorMessage = 'Password should be at least 6 characters.';
+      }
+      setError(errorMessage);
+      setOpen(true);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      setError('Bitte geben Sie Ihre E-Mail-Adresse ein.');
+      setOpen(true);
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setError(
+        'Ein Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail-Adresse gesendet.'
+      );
+      setOpen(true);
+    } catch (error) {
+      let errorMessage =
+        'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.';
+      if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Ungültige E-Mail-Adresse.';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage =
+          'Kein Benutzer mit dieser E-Mail-Adresse gefunden.';
       }
       setError(errorMessage);
       setOpen(true);
@@ -78,6 +112,20 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            {isSignUp && (
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="username"
+                label="Benutzername"
+                type="text"
+                id="username"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            )}
             <TextField
               margin="normal"
               required
@@ -103,13 +151,25 @@ function Login() {
               variant="text"
               onClick={() => setIsSignUp(!isSignUp)}
             >
-              {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+               {isSignUp
+                ? 'Bereits registriert? Hier anmelden'
+                : 'Noch keinen Account? Hier registrieren'}
             </Button>
+            {!isSignUp && (
+              <Button
+                fullWidth
+                variant="text"
+                onClick={handlePasswordReset}
+                sx={{ mt: 1 }}
+              >
+                Passwort vergessen?
+              </Button>
+            )}
           </Box>
         </Paper>
       </Box>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+        <Alert onClose={handleClose} severity="info" sx={{ width: '100%' }}>
           {error}
         </Alert>
       </Snackbar>
