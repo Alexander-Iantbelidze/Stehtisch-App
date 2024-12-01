@@ -138,7 +138,7 @@ function Dashboard({ user }) {
     StandStrong ©
   </Typography>
   <Button color="inherit" component={Link} to="/statistics">
-    Statistics
+    Team Statistics
   </Button>
   <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
     <IconButton color="inherit" onClick={handleLogout}>
