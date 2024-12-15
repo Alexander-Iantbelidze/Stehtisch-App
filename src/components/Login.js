@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { setDoc, doc } from 'firebase/firestore';
+import { setDoc, doc, query, collection, where, getDocs } from 'firebase/firestore';
 import { 
   Container, Box, TextField, Button, Typography, Paper, Snackbar
 } from '@mui/material';
@@ -19,12 +19,24 @@ function Login() {
   const [open, setOpen] = useState(false);
   const [username, setUsername] = useState('');
 
-    // I need to add those 2 also: Error: Firebase: Error (auth/email-already-in-use).
-    // Error: Firebase: Error (auth/invalid-credential).
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       if (isSignUp) {
+        // Check if username already exists
+        const usernameQuery = query(
+          collection(db, 'users'),
+          where('username', '==', username)
+        );
+        const usernameSnapshot = await getDocs(usernameQuery);
+
+        if (!usernameSnapshot.empty) {
+          setError('Dieser Benutzername wird bereits verwendet!');
+          setOpen(true);
+          return;
+        }
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
@@ -36,16 +48,24 @@ function Login() {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (error) {
-      console.error("Error:", error.message);
-      let errorMessage = 'An error occurred. Please try again.';
-      if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Invalid email address.';
-      } else if (error.code === 'auth/user-not-found') {
-        errorMessage = 'No user found with this email.';
-      } else if (error.code === 'auth/wrong-password') {
-        errorMessage = 'Incorrect password.';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'Password should be at least 6 characters.';
+      console.error('Fehlercode:', error.code);
+      console.error('Fehlermeldung:', error.message);
+      let errorMessage = '';
+      switch (error.code) {
+        case 'auth/invalid-email':
+          errorMessage = 'Keine gültige E-Mail-Adresse.';
+          break;
+        case 'auth/invalid-credential':
+          errorMessage = 'E-Mail-Adresse/Passwort ist falsch oder E-Mail-Adresse ist nicht registriert.';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Passwort muss mindestens 6 Zeichen lang sein.';
+          break;
+        case 'auth/email-already-in-use':
+          errorMessage = 'Diese E-Mail wird bereits verwendet.';
+          break;
+        default:
+          errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.';
       }
       setError(errorMessage);
       setOpen(true);
@@ -69,10 +89,7 @@ function Login() {
         'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.';
       if (error.code === 'auth/invalid-email') {
         errorMessage = 'Ungültige E-Mail-Adresse.';
-      } else if (error.code === 'auth/user-not-found') {
-        errorMessage =
-          'Kein Benutzer mit dieser E-Mail-Adresse gefunden.';
-      }
+      } 
       setError(errorMessage);
       setOpen(true);
     }
@@ -169,7 +186,7 @@ function Login() {
         </Paper>
       </Box>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="info" sx={{ width: '100%' }}>
+        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
           {error}
         </Alert>
       </Snackbar>
