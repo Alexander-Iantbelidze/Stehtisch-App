@@ -14,9 +14,15 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { PlayArrow, Stop, ExitToApp } from '@mui/icons-material';
-import { auth, db } from '../firebase'; // Passe den Importpfad nach Bedarf an
+import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+} from 'firebase/firestore';
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
 import { Link } from 'react-router-dom';
 
@@ -25,8 +31,6 @@ function Dashboard({ user }) {
   const [startTime, setStartTime] = useState(null);
   
   const [currentSessionTime, setCurrentSessionTime] = useState(0);
-
-  // Additional state variables for statistics
   const [dailyStandingTime, setDailyStandingTime] = useState(0);
   const [averageStandingTime, setAverageStandingTime] = useState(0);
   
@@ -34,10 +38,12 @@ function Dashboard({ user }) {
 
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
-
   
   const fetchStandingTime = useCallback(async () => {
-    const q = query(collection(db, 'standingTimes'), where('userId', '==', user.uid));
+    const q = query(
+      collection(db, 'standingTimes'),
+      where('userId', '==', user.uid)
+    );
     const querySnapshot = await getDocs(q);
 
     let total = 0;
@@ -73,10 +79,8 @@ function Dashboard({ user }) {
     const avgTime = sessionCount > 0 ? total / sessionCount : 0;
 
     // Update state variables
-    
     setDailyStandingTime(dailyTotal);
     setAverageStandingTime(avgTime);
-   
     setLongestSessionTime(longestSession);
   }, [user.uid]);
 
@@ -89,7 +93,6 @@ function Dashboard({ user }) {
     }
     return () => clearInterval(interval);
   }, [isStanding]);
-
 
   useEffect(() => {
     fetchStandingTime();
@@ -106,7 +109,6 @@ function Dashboard({ user }) {
         endTime: endTime,
         duration: duration,
       });
-
       
       setIsStanding(false);
       setStartTime(null);
@@ -133,19 +135,28 @@ function Dashboard({ user }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <AppBar position="static" sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-      <Toolbar sx={{ display: 'flex' }}>
-  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-    StandStrong ©
-  </Typography>
-  <Button color="inherit" component={Link} to="/statistics">
-    Team Statistics
-  </Button>
-  <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
-    <IconButton color="inherit" onClick={handleLogout}>
-      <ExitToApp />
-    </IconButton>
-  </Box>
-</Toolbar>
+        <Toolbar sx={{ display: 'flex' }}>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            StandStrong ©
+          </Typography>
+          <Button color="inherit" component={Link} to="/statistics">
+            Team Statistics
+          </Button>
+          <Button color="inherit" component={Link} to="/teams">
+            Teams
+          </Button>
+          <Button color="inherit" component={Link} to="/create-team">
+            Create Team
+          </Button>
+          <Button color="inherit" component={Link} to="/notifications">
+            Meine Benachrichtigungen
+          </Button>
+          <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <IconButton color="inherit" onClick={handleLogout}>
+              <ExitToApp />
+            </IconButton>
+          </Box>
+        </Toolbar>
       </AppBar>
       <Container
         maxWidth="xl"
@@ -198,7 +209,7 @@ function Dashboard({ user }) {
               />
               <Box
                 sx={{
-                 inset: 0,
+                  inset: 0,
                   position: 'absolute',
                   display: 'flex',
                   alignItems: 'center',
