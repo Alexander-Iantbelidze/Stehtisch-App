@@ -3,7 +3,7 @@ import { Box, TextField, Button, Typography } from '@mui/material';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../firebase';
 
-const CreateTeam = ({ user }) => {
+const CreateTeam = ({ user, setCurrentTeam }) => {
   const [teamName, setTeamName] = useState('');
 
   const handleCreate = async () => {
@@ -11,7 +11,15 @@ const CreateTeam = ({ user }) => {
       alert('Bitte einen Teamnamen eingeben.');
       return;
     }
-    await addDoc(collection(db, 'teams'), {
+    const docRef = await addDoc(collection(db, 'teams'), {
+      name: teamName,
+      adminId: user.uid,
+      members: [user.uid],
+      createdAt: new Date(),
+    });
+    
+    setCurrentTeam({
+      id: docRef.id,
       name: teamName,
       adminId: user.uid,
       members: [user.uid],

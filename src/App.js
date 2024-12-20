@@ -8,10 +8,11 @@ import CreateTeam from './components/CreateTeam';
 import Notifications from './components/Notifications';
 import Statistics from './components/Statistics';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firestore';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [currentTeam, setCurrentTeam] = useState(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -24,8 +25,44 @@ function App() {
           email: user.email,
           username: username,
         });
+
+        // Fetch Current Team
+        try {
+          // Teams, die vom Benutzer erstellt wurden
+          const createdTeamsQuery = query(
+            collection(db, 'teams'),
+            where('adminId', '==', user.uid)
+          );
+          const createdTeamsSnapshot = await getDocs(createdTeamsQuery);
+          
+          if (!createdTeamsSnapshot.empty) {
+            const team = createdTeamsSnapshot.docs[0].data();
+            setCurrentTeam({ id: createdTeamsSnapshot.docs[0].id, ...team });
+            return;
+          }
+          
+          // Teams, denen der Benutzer beigetreten ist
+          const joinedTeamsQuery = query(
+            collection(db, 'teams'),
+            where('members', 'array-contains', user.uid)
+          );
+          const joinedTeamsSnapshot = await getDocs(joinedTeamsQuery);
+          
+          if (!joinedTeamsSnapshot.empty) {
+            const team = joinedTeamsSnapshot.docs[0].data();
+            setCurrentTeam({ id: joinedTeamsSnapshot.docs[0].id, ...team });
+            return;
+          }
+          
+          // Wenn der Benutzer in keinem Team ist
+          setCurrentTeam(null);
+        } catch (error) {
+          console.error('Fehler beim Abrufen des Teams:', error);
+          setCurrentTeam(null);
+        }
       } else {
         setUser(null);
+        setCurrentTeam(null);
       }
     });
     return () => unsubscribe();
@@ -36,11 +73,11 @@ function App() {
       <div className="App">
         {user ? (
           <Routes>
-            <Route path="/" element={<Dashboard user={user} />} />
+            <Route path="/" element={<Dashboard user={user} currentTeam={currentTeam} />} />
             <Route path="/teams" element={<Teams user={user} />} />
-            <Route path="/create-team" element={<CreateTeam user={user} />} />
+            <Route path="/create-team" element={<CreateTeam user={user} setCurrentTeam={setCurrentTeam} />} />
             <Route path="/notifications" element={<Notifications user={user} />} />
-            <Route path="/statistics" element={<Statistics user={user} />} />
+            <Route path="/statistics" element={<Statistics user={user} teamId={currentTeam ? currentTeam.id : null} />} />
           </Routes>
         ) : (
           <Login />

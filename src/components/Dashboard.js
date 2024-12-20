@@ -25,6 +25,7 @@ import {
 } from 'firebase/firestore';
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
 import { Link } from 'react-router-dom';
+import { Tooltip } from '@mui/material';
 
 function Dashboard({ user }) {
   const [isStanding, setIsStanding] = useState(false);
@@ -36,8 +37,51 @@ function Dashboard({ user }) {
   
   const [longestSessionTime, setLongestSessionTime] = useState(0);
 
+  const [currentTeam, setCurrentTeam] = useState(null);
+
+  const fetchCurrentTeam = useCallback(async () => {
+    try {
+      // Teams, die vom Benutzer erstellt wurden
+      const createdTeamsQuery = query(
+        collection(db, 'teams'),
+        where('adminId', '==', user.uid)
+      );
+      const createdTeamsSnapshot = await getDocs(createdTeamsQuery);
+      
+      if (!createdTeamsSnapshot.empty) {
+        const team = createdTeamsSnapshot.docs[0].data();
+        setCurrentTeam({ id: createdTeamsSnapshot.docs[0].id, ...team });
+        return;
+      }
+      
+      // Teams, denen der Benutzer beigetreten ist
+      const joinedTeamsQuery = query(
+        collection(db, 'teams'),
+        where('members', 'array-contains', user.uid)
+      );
+      const joinedTeamsSnapshot = await getDocs(joinedTeamsQuery);
+      
+      if (!joinedTeamsSnapshot.empty) {
+        const team = joinedTeamsSnapshot.docs[0].data();
+        setCurrentTeam({ id: joinedTeamsSnapshot.docs[0].id, ...team });
+        return;
+      }
+      
+      // Wenn der Benutzer in keinem Team ist
+      setCurrentTeam(null);
+    } catch (error) {
+      console.error('Fehler beim Abrufen des Teams:', error);
+    }
+  }, [user.uid]);
+  
+  useEffect(() => {
+    fetchCurrentTeam();
+  }, [fetchCurrentTeam]);
+
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
+
+
   
   const fetchStandingTime = useCallback(async () => {
     const q = query(
@@ -139,9 +183,22 @@ function Dashboard({ user }) {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             StandStrong ©
           </Typography>
-          <Button color="inherit" component={Link} to="/statistics">
-            Team Statistics
-          </Button>
+          <Tooltip 
+            title={currentTeam ? "" : "Du musst erst einem Team beitreten"}
+            arrow
+            disableHoverListener={currentTeam !== null}
+          >
+            <span>
+              <Button 
+                color="inherit" 
+                component={Link} 
+                to="/statistics" 
+                disabled={!currentTeam}
+              >
+                Team Statistics
+              </Button>
+            </span>
+          </Tooltip>
           <Button color="inherit" component={Link} to="/teams">
             Teams
           </Button>
