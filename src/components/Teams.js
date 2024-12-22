@@ -7,6 +7,7 @@ const Teams = ({ user }) => {
   const [search, setSearch] = useState('');
   const [teams, setTeams] = useState([]);
   const [joinRequestsMap, setJoinRequestsMap] = useState({});
+  const [currentTeam, setCurrentTeam] = useState(null);
 
   useEffect(() => {
     const fetchJoinRequests = async () => {
@@ -40,6 +41,23 @@ const Teams = ({ user }) => {
       setTeams([]);
     }
   }, [search, user.uid]);
+
+  useEffect(() => {
+    const fetchCurrentTeam = async () => {
+      const createdTeamsQuery = query(
+        collection(db, 'teams'),
+        where('members', 'array-contains', user.uid)
+      );
+      const snapshot = await getDocs(createdTeamsQuery);
+      if (!snapshot.empty) {
+        const teamData = snapshot.docs[0].data();
+        setCurrentTeam({ id: snapshot.docs[0].id, ...teamData });
+      } else {
+        setCurrentTeam(null);
+      }
+    };
+    fetchCurrentTeam();
+  }, [user.uid]);
 
   const handleJoin = async (teamId) => {
     try {
@@ -87,9 +105,9 @@ const Teams = ({ user }) => {
       <List>
         {teams.map((team) => {
           const requestStatus = joinRequestsMap[team.id];
-          const disabledButton = requestStatus === 'pending' ||
-                                 requestStatus === 'accepted' ||
-                                 requestStatus === 'rejected';
+          const isCurrentTeam = currentTeam && currentTeam.id === team.id;
+          
+          const disabledButton = isCurrentTeam || requestStatus === 'pending';
 
           return (
             <ListItem key={team.id} divider>
@@ -101,7 +119,12 @@ const Teams = ({ user }) => {
                 disabled={disabledButton}
                 sx={{ ml: 'auto' }}
               >
-                Team beitreten
+                {isCurrentTeam 
+                  ? 'Aktuelles Team' 
+                  : requestStatus === 'pending' 
+                    ? 'Beitrittsanfrage ausstehend'
+                    : 'Team beitreten'
+                }
               </Button>
             </ListItem>
           );

@@ -57,6 +57,12 @@ function Statistics({ user, teamId }) {
       const teamData = teamDoc.data();
       const memberIds = teamData.members;
 
+      // Überprüfung, ob memberIds nicht leer ist
+      if (!memberIds || memberIds.length === 0) {
+        setRankings({});
+        return;
+      }
+
       // 2. Alle standingTimes der Teammitglieder abrufen
       const standingTimesQuery = query(
         collection(db, 'standingTimes'),
