@@ -6,7 +6,7 @@ import {
   where, 
   onSnapshot, 
   doc, 
-  updateDoc 
+  updateDoc, getDoc 
 } from 'firebase/firestore';
 import { Box, Typography, List, ListItem, Button } from '@mui/material';
 
@@ -29,28 +29,39 @@ const Notifications = ({ user }) => {
     return () => unsubscribe();
   }, [user.uid]);
 
-  const handleAccept = async (notif) => {
-    try {
-      // Update JoinRequest status
-      const joinReqRef = doc(db, 'joinRequests', notif.joinRequestId);
-      await updateDoc(joinReqRef, { status: 'accepted' });
+ 
+const handleAccept = async (notif) => {
+  try {
+    // JoinRequest als accepted markieren
+    const joinReqRef = doc(db, 'joinRequests', notif.joinRequestId);
+    await updateDoc(joinReqRef, { status: 'accepted' });
 
-      // Add user to team members
-      const teamRef = doc(db, 'teams', notif.teamId);
-      await updateDoc(teamRef, {
-        members: [...notif.currentMembers, notif.userId],
-      });
-
-      // Mark notification as read
-      const notifRef = doc(db, 'notifications', notif.id);
-      await updateDoc(notifRef, { read: true });
-
-      alert('Beitritt akzeptiert!');
-    } catch (error) {
-      console.error('Fehler beim Akzeptieren der Anfrage:', error);
-      alert('Fehler beim Akzeptieren der Anfrage.');
+    // Bestehende Mitgliederliste abrufen
+    const teamRef = doc(db, 'teams', notif.teamId);
+    const teamSnap = await getDoc(teamRef);
+    if (!teamSnap.exists()) {
+      console.error('Team nicht gefunden.');
+      return;
     }
-  };
+    const teamData = teamSnap.data();
+    const currentMembers = teamData.members || [];
+
+    // Benutzer hinzufügen
+    await updateDoc(teamRef, {
+      members: [...currentMembers, notif.senderId],
+    });
+
+    // Benachrichtigung als gelesen markieren
+    const notifRef = doc(db, 'notifications', notif.id);
+    await updateDoc(notifRef, { read: true });
+
+    alert('Beitritt akzeptiert!');
+  } catch (error) {
+    console.error('Fehler beim Akzeptieren der Anfrage:', error);
+    alert('Fehler beim Akzeptieren der Anfrage.');
+  }
+};
+
 
   const handleReject = async (notif) => {
     try {

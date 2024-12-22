@@ -6,6 +6,21 @@ import { Box, TextField, List, ListItem, Button, Typography } from '@mui/materia
 const Teams = ({ user }) => {
   const [search, setSearch] = useState('');
   const [teams, setTeams] = useState([]);
+  const [joinRequestsMap, setJoinRequestsMap] = useState({});
+
+  useEffect(() => {
+    const fetchJoinRequests = async () => {
+      const q = query(collection(db, 'joinRequests'), where('userId', '==', user.uid));
+      const snapshot = await getDocs(q);
+      const tempMap = {};
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        tempMap[data.teamId] = data.status;
+      });
+      setJoinRequestsMap(tempMap);
+    };
+    fetchJoinRequests();
+  }, [user.uid]);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -13,7 +28,7 @@ const Teams = ({ user }) => {
       const querySnapshot = await getDocs(q);
       const teamList = [];
       querySnapshot.forEach((doc) => {
-        if (doc.id !== user.uid) { // Optional: Exclude user's own team
+        if (doc.id !== user.uid) {
           teamList.push({ id: doc.id, ...doc.data() });
         }
       });
@@ -28,7 +43,6 @@ const Teams = ({ user }) => {
 
   const handleJoin = async (teamId) => {
     try {
-      // Erstelle die JoinRequest
       const joinRequestRef = await addDoc(collection(db, 'joinRequests'), {
         teamId,
         userId: user.uid,
@@ -36,22 +50,22 @@ const Teams = ({ user }) => {
         requestedAt: new Date(),
       });
   
-      // Hole die adminId des Teams
       const teamDocRef = doc(db, 'teams', teamId);
       const teamDoc = await getDoc(teamDocRef);
       const teamData = teamDoc.data();
       const teamAdminId = teamData.adminId;
   
-      // Erstelle die Benachrichtigung für den Team-Admin
       await addDoc(collection(db, 'notifications'), {
-        userId: teamAdminId, // Empfänger der Benachrichtigung
-        senderId: user.uid, // Absender der Benachrichtigung
+        userId: teamAdminId,
+        senderId: user.uid,
         message: `${user.username} möchte Ihrem Team beitreten.`,
         read: false,
         joinRequestId: joinRequestRef.id,
         teamId: teamId,
         createdAt: new Date(),
       });
+  
+      setJoinRequestsMap((prev) => ({ ...prev, [teamId]: 'pending' }));
   
       alert('Beitrittsanfrage gesendet!');
     } catch (error) {
@@ -71,14 +85,27 @@ const Teams = ({ user }) => {
         margin="normal"
       />
       <List>
-        {teams.map((team) => (
-          <ListItem key={team.id} divider>
-            <Typography>{team.name}</Typography>
-            <Button variant="contained" color="primary" onClick={() => handleJoin(team.id)} sx={{ ml: 'auto' }}>
-              Team beitreten
-            </Button>
-          </ListItem>
-        ))}
+        {teams.map((team) => {
+          const requestStatus = joinRequestsMap[team.id];
+          const disabledButton = requestStatus === 'pending' ||
+                                 requestStatus === 'accepted' ||
+                                 requestStatus === 'rejected';
+
+          return (
+            <ListItem key={team.id} divider>
+              <Typography>{team.name}</Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleJoin(team.id)}
+                disabled={disabledButton}
+                sx={{ ml: 'auto' }}
+              >
+                Team beitreten
+              </Button>
+            </ListItem>
+          );
+        })}
       </List>
     </Box>
   );
