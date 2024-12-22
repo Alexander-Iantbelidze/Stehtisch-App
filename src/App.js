@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect } from 'react';
 import { auth, db } from './firebase';
 import Login from './components/Login';
@@ -75,7 +74,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard user={user} currentTeam={currentTeam} />} />
             <Route path="/teams" element={<Teams user={user} />} />
-            <Route path="/create-team" element={<CreateTeam user={user} setCurrentTeam={setCurrentTeam} />} />
+          <Route path="/create-team" element={<CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />} />
             <Route path="/notifications" element={<Notifications user={user} />} />
             <Route path="/statistics" element={<Statistics user={user} teamId={currentTeam ? currentTeam.id : null} />} />
           </Routes>

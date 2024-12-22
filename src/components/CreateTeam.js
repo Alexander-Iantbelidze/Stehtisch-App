@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, updateDoc, arrayRemove } from 'firebase/firestore';
 import { db } from '../firebase';
 
-const CreateTeam = ({ user, setCurrentTeam }) => {
+const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
   const [teamName, setTeamName] = useState('');
 
   const handleCreate = async () => {
+    if (currentTeam) {
+      const confirmSwitch = window.confirm(
+        `Du bist bereits im Team "${currentTeam.name}". Möchtest du wirklich wechseln?`
+      );
+      if (!confirmSwitch) return;
+      const oldTeamRef = doc(db, 'teams', currentTeam.id);
+      await updateDoc(oldTeamRef, {
+        members: arrayRemove(user.uid),
+      });
+    }
+
     if (!teamName) {
       alert('Bitte einen Teamnamen eingeben.');
       return;
