@@ -1,43 +1,63 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
-import { addDoc, collection, doc, updateDoc, arrayRemove } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../firebase';
+import { leaveOldTeam } from '../utils/teamUtils';
 
 const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
   const [teamName, setTeamName] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
-    if (currentTeam) {
-      const confirmSwitch = window.confirm(
-        `Du bist bereits im Team "${currentTeam.name}". Möchtest du wirklich wechseln?`
-      );
-      if (!confirmSwitch) return;
-      const oldTeamRef = doc(db, 'teams', currentTeam.id);
-      await updateDoc(oldTeamRef, {
-        members: arrayRemove(user.uid),
-      });
-    }
+    if (loading) return;
+    setLoading(true);
 
-    if (!teamName) {
-      alert('Bitte einen Teamnamen eingeben.');
-      return;
+    try {
+      if (currentTeam) {
+        const confirmSwitch = window.confirm(
+          `Du bist bereits im Team "${currentTeam.name}". Möchtest du wirklich wechseln?`
+        );
+        if (!confirmSwitch) {
+          setLoading(false);
+          return;
+        }
+
+        await leaveOldTeam(user.uid, currentTeam);
+
+        // Setze das aktuelle Team zurück
+        setCurrentTeam(null);
+      }
+
+      if (!teamName.trim()) {
+        alert('Bitte einen Teamnamen eingeben.');
+        setLoading(false);
+        return;
+      }
+
+      // Erstelle das neue Team
+      const docRef = await addDoc(collection(db, 'teams'), {
+        name: teamName.trim(),
+        adminId: user.uid,
+        members: [user.uid],
+        createdAt: new Date(),
+      });
+
+      setCurrentTeam({
+        id: docRef.id,
+        name: teamName.trim(),
+        adminId: user.uid,
+        members: [user.uid],
+        createdAt: new Date(),
+      });
+
+      alert(`Team "${teamName}" erstellt!`);
+      setTeamName('');
+    } catch (error) {
+      console.error('Fehler beim Erstellen oder Wechseln des Teams:', error);
+      alert('Fehler beim Erstellen oder Wechseln des Teams.');
+    } finally {
+      setLoading(false);
     }
-    const docRef = await addDoc(collection(db, 'teams'), {
-      name: teamName,
-      adminId: user.uid,
-      members: [user.uid],
-      createdAt: new Date(),
-    });
-    
-    setCurrentTeam({
-      id: docRef.id,
-      name: teamName,
-      adminId: user.uid,
-      members: [user.uid],
-      createdAt: new Date(),
-    });
-    alert('Team erstellt!');
-    setTeamName('');
   };
 
   return (
@@ -50,8 +70,13 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
         fullWidth
         margin="normal"
       />
-      <Button variant="contained" color="primary" onClick={handleCreate}>
-        Team erstellen
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleCreate}
+        disabled={loading}
+      >
+        {loading ? 'Erstelle Team...' : 'Team erstellen'}
       </Button>
     </Box>
   );
