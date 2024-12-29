@@ -21,6 +21,11 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSignUp && /@/.test(username)) {
+      setError('Benutzername darf keine E-Mail-Adresse sein.');
+      setOpen(true);
+      return;
+    }
 
     try {
       if (isSignUp) {
@@ -141,6 +146,7 @@ function Login() {
                 autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                slotProps={{ pattern: '^[^@]+$'}}
               />
             )}
             <TextField
