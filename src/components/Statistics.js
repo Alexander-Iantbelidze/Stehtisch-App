@@ -15,7 +15,7 @@ import {
   MenuItem,
 } from '@mui/material';
 
-function Statistics({ user, teamId }) { 
+function Statistics({ teamId }) { 
   const [period, setPeriod] = useState('daily');
   const [rankings, setRankings] = useState({});
   const [usernames, setUsernames] = useState({});

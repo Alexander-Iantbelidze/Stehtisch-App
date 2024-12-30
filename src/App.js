@@ -6,6 +6,7 @@ import Teams from './components/Teams';
 import CreateTeam from './components/CreateTeam';
 import Notifications from './components/Notifications';
 import Statistics from './components/Statistics';
+import UserSettings from './components/UserSettings';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firestore';
 
@@ -74,9 +75,10 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard user={user} currentTeam={currentTeam} />} />
             <Route path="/teams" element={<Teams user={user} />} />
-          <Route path="/create-team" element={<CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />} />
+            <Route path="/create-team" element={<CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />} />
             <Route path="/notifications" element={<Notifications user={user} />} />
             <Route path="/statistics" element={<Statistics user={user} teamId={currentTeam ? currentTeam.id : null} />} />
+            <Route path="/settings" element={<UserSettings user={user} setUser={setUser} />} />
           </Routes>
         ) : (
           <Login />

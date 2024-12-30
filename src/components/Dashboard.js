@@ -26,6 +26,7 @@ import {
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
 import { Link } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
+import Settings from '@mui/icons-material/Settings';
 
 function Dashboard({ user }) {
   const [isStanding, setIsStanding] = useState(false);
@@ -209,6 +210,9 @@ function Dashboard({ user }) {
             Meine Benachrichtigungen
           </Button>
           <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <IconButton color="inherit" component={Link} to="/settings">
+              <Settings />
+            </IconButton>
             <IconButton color="inherit" onClick={handleLogout}>
               <ExitToApp />
             </IconButton>
