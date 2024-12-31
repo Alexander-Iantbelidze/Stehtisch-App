@@ -12,6 +12,7 @@ import {
   Stack,
   useTheme,
   useMediaQuery,
+  Badge,
 } from '@mui/material';
 import { PlayArrow, Stop, ExitToApp } from '@mui/icons-material';
 import { auth, db } from '../firebase';
@@ -22,6 +23,7 @@ import {
   query,
   where,
   getDocs,
+  onSnapshot,
 } from 'firebase/firestore';
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
 import { Link } from 'react-router-dom';
@@ -39,6 +41,7 @@ function Dashboard({ user }) {
   const [longestSessionTime, setLongestSessionTime] = useState(0);
 
   const [currentTeam, setCurrentTeam] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchCurrentTeam = useCallback(async () => {
     try {
@@ -143,6 +146,18 @@ function Dashboard({ user }) {
     fetchStandingTime();
   }, [fetchStandingTime]);
 
+  useEffect(() => {
+    const q = query(
+      collection(db, 'notifications'),
+      where('userId', '==', user.uid),
+      where('read', '==', false)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setUnreadCount(snapshot.size);
+    });
+    return () => unsubscribe();
+  }, [user.uid]);
+
   const handleStartStop = useCallback(async () => {
     if (isStanding) {
       const endTime = new Date();
@@ -206,9 +221,11 @@ function Dashboard({ user }) {
           <Button color="inherit" component={Link} to="/create-team">
             Create Team
           </Button>
-          <Button color="inherit" component={Link} to="/notifications">
-            Meine Benachrichtigungen
-          </Button>
+          <Badge badgeContent={unreadCount} color="error">
+            <Button color="inherit" component={Link} to="/notifications">
+              Meine Benachrichtigungen
+            </Button>
+          </Badge>
           <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
             <IconButton color="inherit" component={Link} to="/settings">
               <Settings />
