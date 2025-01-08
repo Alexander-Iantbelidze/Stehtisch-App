@@ -9,11 +9,15 @@ import {
   updateDoc, getDoc,
   arrayUnion,
 } from 'firebase/firestore';
-import { Box, Typography, List, ListItem, Button } from '@mui/material';
+import { Box, Typography, List, ListItem, Button, Backdrop, Snackbar, Alert, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { leaveOldTeam } from '../utils/teamUtils';
 
 const Notifications = ({ user }) => {
   const [notifications, setNotifications] = useState([]);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
 
   useEffect(() => {
     const q = query(
@@ -30,6 +34,12 @@ const Notifications = ({ user }) => {
     });
     return () => unsubscribe();
   }, [user.uid]);
+
+  const showAlert = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
 
   const handleAccept = async (notif) => {
     try {
@@ -51,8 +61,8 @@ const Notifications = ({ user }) => {
       // 5. Prüfen, ob das Team existiert
       const teamSnap = await getDoc(teamRef);
       if (!teamSnap.exists()) {
-        console.error('Team nicht gefunden.');
-        alert('Team existiert nicht mehr.');
+        
+      showAlert('Team existiert nicht mehr.', 'error');
         return;
       }
   
@@ -60,10 +70,10 @@ const Notifications = ({ user }) => {
       const notifRef = doc(db, 'notifications', notif.id);
       await updateDoc(notifRef, { read: true });
   
-      alert(`Beitritt zum Team "${teamSnap.data().name}" akzeptiert!`);
+      showAlert(`Beitritt zum Team "${teamSnap.data().name}" akzeptiert!`, 'info');
     } catch (error) {
-      console.error('Fehler beim Akzeptieren der Anfrage:', error);
-      alert('Fehler beim Akzeptieren der Anfrage.');
+      
+      showAlert('Fehler beim Akzeptieren der Anfrage.', 'error');
     }
   };
 
@@ -77,10 +87,10 @@ const Notifications = ({ user }) => {
       const notifRef = doc(db, 'notifications', notif.id);
       await updateDoc(notifRef, { read: true });
 
-      alert('Beitritt abgelehnt!');
+      showAlert('Beitritt abgelehnt!', 'error');
     } catch (error) {
-      console.error('Fehler beim Ablehnen der Anfrage:', error);
-      alert('Fehler beim Ablehnen der Anfrage.');
+      
+      showAlert('Fehler beim Ablehnen der Anfrage.', 'error');
     }
   };
 
@@ -124,6 +134,34 @@ const Notifications = ({ user }) => {
           ))}
         </List>
       )}
+      <Backdrop
+        open={openSnackbar}
+        sx={{
+          zIndex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)'
+        }}
+      />
+      <Snackbar
+        open={openSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        onClose={() => {}}
+      >
+        <Alert
+        severity={snackbarSeverity}
+          variant="filled"
+          action={
+            <IconButton
+              color="inherit"
+              size="small"
+              onClick={() => setOpenSnackbar(false)}
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          }
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

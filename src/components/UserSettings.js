@@ -3,18 +3,28 @@ import { auth, db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { TextField, Button, Typography, Paper, Box } from '@mui/material';
+import { TextField, Button, Typography, Paper, Box, Backdrop, Snackbar, Alert, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { leaveOldTeam } from '../utils/teamUtils';
 
 function UserSettings({ user, setUser }) {
   const [newUsername, setNewUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
   const navigate = useNavigate();
+
+  const showAlert = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
 
   const handleUpdateUsername = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (emailRegex.test(newUsername)) {
-      alert('Bitte keine E-Mail-Adresse als Benutzername verwenden.');
+      showAlert('Bitte keine E-Mail-Adresse als Benutzername verwenden.', 'warning');
       return;
     }
     const userRef = doc(db, 'users', user.uid);
@@ -23,22 +33,22 @@ function UserSettings({ user, setUser }) {
       const q = query(collection(db, 'users'), where('username', '==', newUsername));
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
-        alert('Benutzername bereits vergeben.');
+        showAlert('Benutzername bereits vergeben.', 'warning');
         return;
       }
       await updateDoc(userRef, { username: newUsername });
       setUser((prev) => ({ ...prev, username: newUsername }));
-      alert('Benutzername aktualisiert!');
+      showAlert('Benutzername aktualisiert!', 'success');
       setNewUsername('');
     } catch (error) {
       console.error(error);
-      alert('Fehler beim Ändern des Benutzernamens.');
+      showAlert('Fehler beim Ändern des Benutzernamens.', 'error');
     }
   };
 
   const handleDeleteAccount = async () => {
     if (!password.trim()) {
-      alert('Bitte geben Sie Ihr Passwort ein.');
+      showAlert('Bitte geben Sie Ihr Passwort ein.', 'warning');
       return;
     }
     if (!window.confirm('Möchten Sie Ihren Account wirklich löschen?')) return;
@@ -81,54 +91,85 @@ function UserSettings({ user, setUser }) {
       // 6) Firebase Auth Löschung
       await deleteUser(auth.currentUser);
 
-      alert('Account komplett gelöscht.');
+      showAlert('Account komplett gelöscht.', 'success');
       navigate('/');
     } catch (error) {
       console.error(error);
       if (error.code === 'auth/invalid-credential') {
-        alert('Das eingegebene Passwort war falsch.');
+        showAlert('Das eingegebene Passwort war falsch.', 'error');
       } else {
-        alert('Fehler beim Löschen des Accounts.');
+        showAlert('Fehler beim Löschen des Accounts.', 'error');
       }
     }
   };
 
   return (
-    <Box sx={{ mt: 5, display: 'flex', justifyContent: 'center' }}>
-      <Paper sx={{ p: 3, width: '100%', maxWidth: 600 }}>
-        <Typography variant="h5" gutterBottom>
-          Einstellungen
-        </Typography>
-        <Box sx={{ mb: 2 }}>
-          <TextField
-            label="Neuer Benutzername"
-            variant="outlined"
-            fullWidth
-            value={newUsername}
-            onChange={(e) => setNewUsername(e.target.value)}
-          />
-          <Button variant="contained" sx={{ mt: 1 }} onClick={handleUpdateUsername}>
-            Benutzername ändern
-          </Button>
-        </Box>
-        <Box sx={{ mb: 2 }}>
-          <TextField
-            label="Passwort"
-            type="password"
-            variant="outlined"
-            fullWidth
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoFocus
-          />
-        </Box>
-        <Box>
-          <Button variant="contained" color="error" onClick={handleDeleteAccount}>
-            Account löschen
-          </Button>
-        </Box>
-      </Paper>
-    </Box>
+    <>
+      <Box sx={{ mt: 5, display: 'flex', justifyContent: 'center' }}>
+        <Paper sx={{ p: 3, width: '100%', maxWidth: 600 }}>
+          <Typography variant="h5" gutterBottom>
+            Einstellungen
+          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              label="Neuer Benutzername"
+              variant="outlined"
+              fullWidth
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+            />
+            <Button variant="contained" sx={{ mt: 1 }} onClick={handleUpdateUsername}>
+              Benutzername ändern
+            </Button>
+          </Box>
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              label="Passwort"
+              type="password"
+              variant="outlined"
+              fullWidth
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoFocus
+            />
+          </Box>
+          <Box>
+            <Button variant="contained" color="error" onClick={handleDeleteAccount}>
+              Account löschen
+            </Button>
+          </Box>
+        </Paper>
+      </Box>
+      <Backdrop
+        open={openSnackbar}
+        sx={{
+          zIndex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)'
+        }}
+      />
+      <Snackbar
+        open={openSnackbar}
+        anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
+        onClose={() => {}}
+        
+      >
+        <Alert
+        severity={snackbarSeverity}
+          variant="filled"
+          action={
+            <IconButton
+              color="inherit"
+              size="small"
+              onClick={() => setOpenSnackbar(false)}
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          }
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
 

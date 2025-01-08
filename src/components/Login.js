@@ -3,13 +3,10 @@ import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { setDoc, doc, query, collection, where, getDocs } from 'firebase/firestore';
 import { 
-  Container, Box, TextField, Button, Typography, Paper, Snackbar
+  Container, Box, TextField, Button, Typography, Paper, Snackbar, Backdrop, Alert, IconButton
 } from '@mui/material';
-import MuiAlert from '@mui/material/Alert';
+import CloseIcon from '@mui/icons-material/Close';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -53,8 +50,6 @@ function Login() {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (error) {
-      console.error('Fehlercode:', error.code);
-      console.error('Fehlermeldung:', error.message);
       let errorMessage = '';
       switch (error.code) {
         case 'auth/invalid-email':
@@ -100,12 +95,7 @@ function Login() {
     }
   };
 
-  const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpen(false);
-  };
+  
 
   return (
     <Container component="main" maxWidth="xs">
@@ -191,8 +181,31 @@ function Login() {
           </Box>
         </Paper>
       </Box>
-      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+      <Backdrop
+        open={open}
+        sx={{
+          zIndex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)'
+        }}
+      />
+      <Snackbar
+        open={open}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        onClose={() => {}}
+      >
+        <Alert
+          variant="filled"
+          action={
+            <IconButton
+              color="inherit"
+              size="small"
+              onClick={() => setOpen(false)}
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          }
+          severity="error"
+        >
           {error}
         </Alert>
       </Snackbar>

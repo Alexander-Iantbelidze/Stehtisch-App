@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, query, where, doc, getDoc, getDocs, addDoc } from 'firebase/firestore';
-import { Box, TextField, List, ListItem, Button, Typography } from '@mui/material';
+import { Box, TextField, List, ListItem, Button, Typography, Backdrop, Snackbar, Alert, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Teams = ({ user }) => {
   const [search, setSearch] = useState('');
   const [teams, setTeams] = useState([]);
   const [joinRequestsMap, setJoinRequestsMap] = useState({});
   const [currentTeam, setCurrentTeam] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
 
   useEffect(() => {
     const fetchJoinRequests = async () => {
@@ -59,6 +63,12 @@ const Teams = ({ user }) => {
     fetchCurrentTeam();
   }, [user.uid]);
 
+  const showAlert = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
+
   const handleJoin = async (teamId) => {
     try {
       const joinRequestRef = await addDoc(collection(db, 'joinRequests'), {
@@ -85,10 +95,9 @@ const Teams = ({ user }) => {
   
       setJoinRequestsMap((prev) => ({ ...prev, [teamId]: 'pending' }));
   
-      alert('Beitrittsanfrage gesendet!');
+      showAlert('Beitrittsanfrage gesendet!', 'info');
     } catch (error) {
-      console.error('Fehler beim Senden der Beitrittsanfrage:', error);
-      alert('Fehler beim Senden der Beitrittsanfrage. Bitte versuchen Sie es erneut.');
+      showAlert('Fehler beim Senden der Beitrittsanfrage. Bitte versuchen Sie es erneut.', 'error');
     }
   };
 
@@ -130,6 +139,35 @@ const Teams = ({ user }) => {
           );
         })}
       </List>
+      <Backdrop
+        open={openSnackbar}
+        sx={{
+          zIndex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)'
+        }}
+      />
+      <Snackbar
+        open={openSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        onClose={() => {}}
+        
+      >
+        <Alert
+        severity={snackbarSeverity}
+          variant="filled"
+          action={
+            <IconButton
+              color="inherit"
+              size="small"
+              onClick={() => setOpenSnackbar(false)}
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          }
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
