@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { leaveOldTeam } from '../utils/teamUtils';
 import { Backdrop, Snackbar, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
@@ -26,11 +26,19 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
       setLoading(false);
       return;
     } 
-    
     if (loading) return;
     setLoading(true);
 
     try {
+      // Teamnamen prüfen
+      const q = query(collection(db, 'teams'), where('name', '==', teamName.trim()));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        showAlert('Team existiert bereits.', 'warning');
+        setLoading(false);
+        return;
+      }
+
       if (currentTeam) {
         // Anstelle des window.confirm-Dialogs
         setOpenSwitchDialog(true);
