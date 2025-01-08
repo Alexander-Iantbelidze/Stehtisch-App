@@ -7,7 +7,6 @@ import {
   Container,
   Box,
   Paper,
-  CircularProgress,
   Button,
   Stack,
   useTheme,
@@ -275,30 +274,37 @@ function Dashboard({ user }) {
             <Box
               sx={{
                 position: 'relative',
-                display: 'inline-flex',
-                width: '100%',
-                maxWidth: 300,
+                width: isLargeScreen ? 200 : 150,
+                height: isLargeScreen ? 200 : 150,
+                borderRadius: '50%',
+                border: (theme) => `2px solid ${theme.palette.primary.main}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'transparent',
+                overflow: 'visible'
               }}
             >
-              <CircularProgress
-                variant="determinate"
-                value={(currentSessionTime / 3600) * 100}
-                size={isLargeScreen ? 200 : 150}
-              />
-              <Box
-                sx={{
-                  inset: 0,
-                  position: 'absolute',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Typography variant="h5" component="div" color="text.secondary">
-                  {Math.floor(currentSessionTime / 60)}:
-                  {(currentSessionTime % 60).toString().padStart(2, '0')}
-                </Typography>
-              </Box>
+              {isStanding && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    animation: 'ripple 1.5s infinite ease-in-out',
+                    border: (theme) => `2px solid ${theme.palette.primary.main}`,
+                    '@keyframes ripple': {
+                      '0%': { transform: 'scale(1)', opacity: 0.5 },
+                      '100%': { transform: 'scale(1.5)', opacity: 0 }
+                    }
+                  }}
+                />
+              )}
+              <Typography variant="h5" color="text.secondary">
+                {Math.floor(currentSessionTime / 60)}:
+                {(currentSessionTime % 60).toString().padStart(2, '0')}
+              </Typography>
             </Box>
             <Button
               variant="contained"
