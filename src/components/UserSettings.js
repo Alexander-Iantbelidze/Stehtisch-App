@@ -149,9 +149,8 @@ function UserSettings({ user, setUser }) {
       />
       <Snackbar
         open={openSnackbar}
-        anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         onClose={() => {}}
-        
       >
         <Alert
         severity={snackbarSeverity}
