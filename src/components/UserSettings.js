@@ -3,7 +3,7 @@ import { auth, db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { TextField, Button, Typography, Paper, Box, Backdrop, Snackbar, Alert, IconButton } from '@mui/material';
+import { TextField, Button, Typography, Paper, Box, Backdrop, Snackbar, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { leaveOldTeam } from '../utils/teamUtils';
 
@@ -13,6 +13,9 @@ function UserSettings({ user, setUser }) {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
   const showAlert = (message, severity) => {
@@ -47,11 +50,19 @@ function UserSettings({ user, setUser }) {
   };
 
   const handleDeleteAccount = async () => {
+    setOpenDeleteDialog(true);
+  };
+
+  const handleShowPassword = async () => {
+    setShowPassword(true);
+  };
+
+  const confirmDelete = async () => {
+    setOpenDeleteDialog(false);
     if (!password.trim()) {
       showAlert('Bitte geben Sie Ihr Passwort ein.', 'warning');
       return;
     }
-    if (!window.confirm('Möchten Sie Ihren Account wirklich löschen?')) return;
     try {
       // Schritt 0: Neu authentifizieren
       const credential = EmailAuthProvider.credential(auth.currentUser.email, password);
@@ -91,7 +102,6 @@ function UserSettings({ user, setUser }) {
       // 6) Firebase Auth Löschung
       await deleteUser(auth.currentUser);
 
-      showAlert('Account komplett gelöscht.', 'success');
       navigate('/');
     } catch (error) {
       console.error(error);
@@ -122,6 +132,7 @@ function UserSettings({ user, setUser }) {
               Benutzername ändern
             </Button>
           </Box>
+          {showPassword && (
           <Box sx={{ mb: 2 }}>
             <TextField
               label="Passwort"
@@ -133,13 +144,30 @@ function UserSettings({ user, setUser }) {
               autoFocus
             />
           </Box>
+          )}
           <Box>
-            <Button variant="contained" color="error" onClick={handleDeleteAccount}>
+            <Button variant="contained" color="error" onClick={handleDeleteAccount} onMouseEnter={handleShowPassword}>
               Account löschen
             </Button>
           </Box>
         </Paper>
       </Box>
+
+      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+        <DialogTitle>Account löschen</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Sind Sie sicher, dass Sie Ihren Account unwiderruflich löschen möchten?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteDialog(false)}>Abbrechen</Button>
+          <Button onClick={confirmDelete} autoFocus>
+            Löschen
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Backdrop
         open={openSnackbar}
         sx={{
