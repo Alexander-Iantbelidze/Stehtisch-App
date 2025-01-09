@@ -42,6 +42,10 @@ function Dashboard({ user }) {
   const [currentTeam, setCurrentTeam] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const theme = useTheme();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
+
+
   const fetchCurrentTeam = useCallback(async () => {
     try {
       // Teams, die vom Benutzer erstellt wurden
@@ -80,11 +84,6 @@ function Dashboard({ user }) {
   useEffect(() => {
     fetchCurrentTeam();
   }, [fetchCurrentTeam]);
-
-  const theme = useTheme();
-  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
-
-
   
   const fetchStandingTime = useCallback(async () => {
     const q = query(
@@ -133,13 +132,15 @@ function Dashboard({ user }) {
 
   useEffect(() => {
     let interval;
-    if (isStanding) {
+    if (isStanding && startTime !== null) {
       interval = setInterval(() => {
-        setCurrentSessionTime((prev) => prev + 1);
+        setCurrentSessionTime(
+          Math.floor((Date.now() - startTime) / 1000)
+        );
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isStanding]);
+  }, [isStanding, startTime]);
 
   useEffect(() => {
     fetchStandingTime();
@@ -159,24 +160,26 @@ function Dashboard({ user }) {
 
   const handleStartStop = useCallback(async () => {
     if (isStanding) {
-      const endTime = new Date();
+      // User stoppt das Stehen
+      const endTime = Date.now();
       const duration = Math.round((endTime - startTime) / 1000);
 
       await addDoc(collection(db, 'standingTimes'), {
         userId: user.uid,
-        startTime: startTime,
-        endTime: endTime,
-        duration: duration,
+        startTime: new Date(startTime), 
+        endTime: new Date(endTime), 
+        duration: duration
       });
-      
+
       setIsStanding(false);
       setStartTime(null);
       setCurrentSessionTime(0);
 
       await fetchStandingTime();
     } else {
+      // User startet das Stehen
       setIsStanding(true);
-      setStartTime(new Date());
+      setStartTime(Date.now());
     }
   }, [isStanding, startTime, user.uid, fetchStandingTime]);
 
@@ -188,7 +191,14 @@ function Dashboard({ user }) {
   const formatTime = (timeInSeconds) => {
     const hrs = Math.floor(timeInSeconds / 3600);
     const mins = Math.floor((timeInSeconds % 3600) / 60);
-    return `${hrs}h ${mins}m`;
+    const secs = timeInSeconds % 60;
+    if (hrs > 0) {
+      return `${hrs}h ${mins}m ${secs}s`;
+    }
+    if (mins > 0) {
+      return `${mins}m ${secs}s`;
+    }
+    return `${secs}s`;
   };
 
   return (
