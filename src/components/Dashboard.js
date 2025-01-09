@@ -44,7 +44,7 @@ function Dashboard({ user }) {
 
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
-
+  const isAdmin = currentTeam?.adminId === user.uid;
 
   const fetchCurrentTeam = useCallback(async () => {
     try {
@@ -230,11 +230,13 @@ function Dashboard({ user }) {
           <Button color="inherit" component={Link} to="/create-team">
             Create Team
           </Button>
+          { isAdmin && ( 
           <Badge badgeContent={unreadCount} color="error">
             <Button color="inherit" component={Link} to="/notifications">
               Meine Benachrichtigungen
             </Button>
           </Badge>
+          )}
           <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
             <IconButton color="inherit" component={Link} to="/settings">
               <Settings />
