@@ -98,11 +98,8 @@ const Notifications = ({ user }) => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Meine Benachrichtigungen
-      </Typography>
       {notifications.length === 0 ? (
-        <Typography variant="body1">Keine neuen Benachrichtigungen.</Typography>
+        <Typography variant="h5">Keine neuen Benachrichtigungen.</Typography>
       ) : (
         <List>
           {notifications.map((notif) => (

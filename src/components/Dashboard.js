@@ -12,6 +12,10 @@ import {
   useTheme,
   useMediaQuery,
   Badge,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  Tooltip
 } from '@mui/material';
 import { PlayArrow, Stop, ExitToApp } from '@mui/icons-material';
 import { auth, db } from '../firebase';
@@ -26,8 +30,10 @@ import {
 } from 'firebase/firestore';
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
 import { Link } from 'react-router-dom';
-import { Tooltip } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
+import Teams from './Teams'; 
+import CreateTeam from './CreateTeam';
+import Notifications from './Notifications';
 
 function Dashboard({ user }) {
   const [isStanding, setIsStanding] = useState(false);
@@ -41,6 +47,9 @@ function Dashboard({ user }) {
 
   const [currentTeam, setCurrentTeam] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [openTeamsDialog, setOpenTeamsDialog] = useState(false);
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [openNotificationsDialog, setOpenNotificationsDialog] = useState(false);
 
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
@@ -224,15 +233,15 @@ function Dashboard({ user }) {
               </Button>
             </span>
           </Tooltip>
-          <Button color="inherit" component={Link} to="/teams">
+          <Button color="inherit" onClick={() => setOpenTeamsDialog(true)}>
             Join Team
           </Button>
-          <Button color="inherit" component={Link} to="/create-team">
+          <Button color="inherit" onClick={() => setOpenCreateDialog(true)}>
             Create Team
           </Button>
           { isAdmin && ( 
           <Badge badgeContent={unreadCount} color="error">
-            <Button color="inherit" component={Link} to="/notifications">
+            <Button color="inherit" onClick={() => setOpenNotificationsDialog(true)}>
               Meine Benachrichtigungen
             </Button>
           </Badge>
@@ -366,6 +375,31 @@ function Dashboard({ user }) {
           </Paper>
         </Stack>
       </Container>
+      {/* Hier beginnen die ganzen Modal Dialogs die getriggert werden über die Appbar */}
+      <Dialog open={openTeamsDialog} onClose={() => setOpenTeamsDialog(false)}>
+        <DialogContent>
+          <Teams user={user} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenTeamsDialog(false)}>Schließen</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)}>
+        <DialogContent>
+          <CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCreateDialog(false)}>Schließen</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={openNotificationsDialog} onClose={() => setOpenNotificationsDialog(false)}>
+        <DialogContent>
+          <Notifications user={user} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenNotificationsDialog(false)}>Schließen</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
