@@ -225,7 +225,7 @@ function Dashboard({ user }) {
             </span>
           </Tooltip>
           <Button color="inherit" component={Link} to="/teams">
-            Teams
+            Join Team
           </Button>
           <Button color="inherit" component={Link} to="/create-team">
             Create Team
