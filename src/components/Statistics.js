@@ -13,15 +13,86 @@ import {
   Typography,
   Select,
   MenuItem,
+  Box,
 } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 
-function Statistics({ teamId }) { 
+
+function Statistics({ teamId }) {
   const [period, setPeriod] = useState('daily');
   const [rankings, setRankings] = useState({});
   const [usernames, setUsernames] = useState({});
   const [teamName, setTeamName] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const periods = ['daily', 'weekly', 'monthly', 'yearly'];
+
+  // Column definitions for the DataGrid
+  const columns = [
+    { 
+      field: 'rank', 
+      headerName: 'Rank', 
+      width: 100,
+      sortable: false
+    },
+    { 
+      field: 'username', 
+      headerName: 'Username', 
+      width: 200,
+      sortable: false
+    },
+    { 
+      field: 'totalTime', 
+      headerName: 'Total Standing Time', 
+      width: 200,
+      sortable: false,
+      valueFormatter: (value) => formatTime(value),
+      
+    },
+    { 
+      field: 'avgTime', 
+      headerName: 'Average Session Time', 
+      width: 200,
+      sortable: false,
+      valueFormatter: (value) => formatTime(value),
+    
+    },
+    { 
+      field: 'longestSession', 
+      headerName: 'Longest Session', 
+      width: 200,
+      sortable: false,
+      valueFormatter: (value) => formatTime(value),
+   
+    },
+    { 
+      field: 'sessions', 
+      headerName: 'Total Sessions', 
+      width: 150,
+      sortable: false,
+      type: 'number'
+    }
+  ];
+
+  const createRowsFromRankings = (rankings, usernames) => {
+    if (!rankings.totalStandingTimeRanking) return [];
+
+    return rankings.totalStandingTimeRanking.map((item, index) => {
+      const userId = item.userId;
+      const avgSession = rankings.averageSessionTimeRanking.find(r => r.userId === userId);
+      const longestSession = rankings.longestSessionTimeRanking.find(r => r.userId === userId);
+      
+      return {
+        id: userId,
+        rank: index + 1,
+        username: usernames[userId] || userId,
+        totalTime: item.value,
+        avgTime: avgSession ? avgSession.value : 0,
+        longestSession: longestSession ? longestSession.value : 0,
+        sessions: item.sessionCount || 0
+      };
+    });
+  };
 
   useEffect(() => {
     const fetchTeamName = async () => {
@@ -31,11 +102,9 @@ function Statistics({ teamId }) {
           const teamDoc = await getDoc(teamDocRef);
           if (teamDoc.exists()) {
             setTeamName(teamDoc.data().name);
-          } else {
-            console.error('Team nicht gefunden');
           }
         } catch (error) {
-          console.error('Fehler beim Abrufen des Teamnamens:', error);
+          console.error('Error fetching team name:', error);
         }
       }
     };
@@ -45,76 +114,84 @@ function Statistics({ teamId }) {
 
   useEffect(() => {
     const fetchStatistics = async () => {
-      if (!teamId) return; // Falls kein Team vorhanden, Abbruch
-
-      // 1. Teammitglieder abrufen
-      const teamDocRef = doc(db, 'teams', teamId);
-      const teamDoc = await getDoc(teamDocRef);
-      if (!teamDoc.exists()) {
-        console.error('Team nicht gefunden');
-        return;
-      }
-      const teamData = teamDoc.data();
-      const memberIds = teamData.members;
-
-      // Überprüfung, ob memberIds nicht leer ist
-      if (!memberIds || memberIds.length === 0) {
-        setRankings({});
+      setLoading(true);
+      if (!teamId) {
+        setLoading(false);
         return;
       }
 
-      // 2. Alle standingTimes der Teammitglieder abrufen
-      const standingTimesQuery = query(
-        collection(db, 'standingTimes'),
-        where('userId', 'in', memberIds)
-      );
-      const standingTimesSnapshot = await getDocs(standingTimesQuery);
-
-      // 3. Daten nach Zeitraum filtern und Statistiken berechnen
-      const startDate = getStartDate(period);
-      const userStats = {};
-
-      standingTimesSnapshot.forEach((doc) => {
-        const { userId, duration, startTime } = doc.data();
-        const timestamp = startTime.toDate();
-
-        if (timestamp >= startDate) {
-          if (!userStats[userId]) {
-            userStats[userId] = {
-              totalStandingTime: 0,
-              sessionCount: 0,
-              longestSessionTime: 0,
-            };
-          }
-
-          userStats[userId].totalStandingTime += duration;
-          userStats[userId].sessionCount += 1;
-          if (duration > userStats[userId].longestSessionTime) {
-            userStats[userId].longestSessionTime = duration;
-          }
+      try {
+        // 1. Get team members
+        const teamDocRef = doc(db, 'teams', teamId);
+        const teamDoc = await getDoc(teamDocRef);
+        if (!teamDoc.exists()) {
+          setLoading(false);
+          return;
         }
-      });
 
-      // Durchschnittliche Sitzungsdauer berechnen
-      for (let userId in userStats) {
-        const stats = userStats[userId];
-        stats.averageSessionTime = stats.sessionCount > 0 ? stats.totalStandingTime / stats.sessionCount : 0;
+        const memberIds = teamDoc.data().members;
+        if (!memberIds?.length) {
+          setRankings({});
+          setLoading(false);
+          return;
+        }
+
+        // 2. Get all standing times
+        const standingTimesQuery = query(
+          collection(db, 'standingTimes'),
+          where('userId', 'in', memberIds)
+        );
+        const standingTimesSnapshot = await getDocs(standingTimesQuery);
+
+        // 3. Filter and calculate statistics
+        const startDate = getStartDate(period);
+        const userStats = {};
+
+        standingTimesSnapshot.forEach((doc) => {
+          const { userId, duration, startTime } = doc.data();
+          const timestamp = startTime.toDate();
+
+          if (timestamp >= startDate) {
+            if (!userStats[userId]) {
+              userStats[userId] = {
+                totalStandingTime: 0,
+                sessionCount: 0,
+                longestSessionTime: 0,
+              };
+            }
+
+            userStats[userId].totalStandingTime += duration;
+            userStats[userId].sessionCount += 1;
+            if (duration > userStats[userId].longestSessionTime) {
+              userStats[userId].longestSessionTime = duration;
+            }
+          }
+        });
+
+        // Calculate average session time
+        Object.values(userStats).forEach(stats => {
+          stats.averageSessionTime = stats.sessionCount > 0 
+            ? stats.totalStandingTime / stats.sessionCount 
+            : 0;
+        });
+
+        // Create rankings
+        const rankings = {
+          totalStandingTimeRanking: getRanking(userStats, 'totalStandingTime'),
+          averageSessionTimeRanking: getRanking(userStats, 'averageSessionTime'),
+          longestSessionTimeRanking: getRanking(userStats, 'longestSessionTime')
+        };
+
+        setRankings(rankings);
+
+        // Get usernames
+        const usernamesMap = await fetchUsernames(memberIds);
+        setUsernames(usernamesMap);
+        
+      } catch (error) {
+        console.error('Error fetching statistics:', error);
       }
-
-      // 4. Ranglisten erstellen (Teammitglieder)
-      const totalStandingTimeRanking = getRanking(userStats, 'totalStandingTime');
-      const averageSessionTimeRanking = getRanking(userStats, 'averageSessionTime');
-      const longestSessionTimeRanking = getRanking(userStats, 'longestSessionTime');
-
-      setRankings({
-        totalStandingTimeRanking,
-        averageSessionTimeRanking,
-        longestSessionTimeRanking,
-      });
-
-      // 5. Benutzernamen abrufen
-      const usernamesMap = await fetchUsernames(memberIds);
-      setUsernames(usernamesMap);
+      setLoading(false);
     };
 
     fetchStatistics();
@@ -128,7 +205,7 @@ function Statistics({ teamId }) {
       case 'weekly':
         const firstDayOfWeek = new Date(now);
         firstDayOfWeek.setDate(now.getDate() - now.getDay());
-        return new Date(firstDayOfWeek.getFullYear(), firstDayOfWeek.getMonth(), firstDayOfWeek.getDate());
+        return firstDayOfWeek;
       case 'monthly':
         return new Date(now.getFullYear(), now.getMonth(), 1);
       case 'yearly':
@@ -143,88 +220,87 @@ function Statistics({ teamId }) {
       .map(([userId, stats]) => ({
         userId,
         value: stats[metric],
+        sessionCount: stats.sessionCount
       }))
       .sort((a, b) => b.value - a.value);
   };
 
   const fetchUsernames = async (userIds) => {
     const usernamesMap = {};
-
-    if (userIds.length === 0) {
-      return usernamesMap;
-    }
-
-    const usersRef = collection(db, 'users');
     const batches = [];
 
-    // Firestore 'in' Queries haben eine maximale Anzahl von 10 Einträgen
     for (let i = 0; i < userIds.length; i += 10) {
-      const batch = query(usersRef, where('__name__', 'in', userIds.slice(i, i + 10)));
-      batches.push(batch);
+      const batch = userIds.slice(i, i + 10);
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('__name__', 'in', batch)
+      );
+      batches.push(getDocs(usersQuery));
     }
 
-    for (const batch of batches) {
-      const usersSnapshot = await getDocs(batch);
-      usersSnapshot.forEach((doc) => {
-        usernamesMap[doc.id] = doc.data().username || 'Unbekannter Benutzer';
+    const results = await Promise.all(batches);
+    results.forEach(snapshot => {
+      snapshot.forEach(doc => {
+        usernamesMap[doc.id] = doc.data().username || 'Unknown User';
       });
-    }
+    });
 
     return usernamesMap;
   };
 
-  const formatTime = (seconds) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    return `${hrs}h ${mins}m`;
+  const formatTime = (timeInSeconds) => {
+    const hrs = Math.floor(timeInSeconds / 3600);
+    const mins = Math.floor((timeInSeconds % 3600) / 60);
+    const secs = timeInSeconds % 60;
+    if (hrs > 0) {
+      return `${hrs}h ${mins}m ${secs}s`;
+    }
+    if (mins > 0) {
+      return `${mins}m ${secs}s`;
+    }
+    return `${secs}s`;
   };
 
+  const rows = createRowsFromRankings(rankings, usernames);
+
   return (
-    <Container sx={{ py: 3 }}>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
       <Typography variant="h4" gutterBottom>
         Team Statistics – {teamName}
       </Typography>
 
-      {/* Zeitraum-Auswahl */}
-      <Select value={period} onChange={(e) => setPeriod(e.target.value)} sx={{ mb: 3 }}>
-        {periods.map((p) => (
-          <MenuItem key={p} value={p}>
-            {p.charAt(0).toUpperCase() + p.slice(1)}
-          </MenuItem>
-        ))}
-      </Select>
-
-      {/* Ranglisten anzeigen */}
-      {rankings.totalStandingTimeRanking && (
-        <>
-          <Typography variant="h5" sx={{ mt: 3 }}>
-            {period.charAt(0).toUpperCase() + period.slice(1)} Standing Time
-          </Typography>
-          {rankings.totalStandingTimeRanking.map((item, index) => (
-            <Typography key={item.userId}>
-              {index + 1}. {usernames[item.userId] || item.userId} - {formatTime(item.value)}
-            </Typography>
+      <Box sx={{ mb: 3 }}>
+        <Select value={period} onChange={(e) => setPeriod(e.target.value)}>
+          {periods.map((p) => (
+            <MenuItem key={p} value={p}>
+              {p.charAt(0).toUpperCase() + p.slice(1)}
+            </MenuItem>
           ))}
+        </Select>
+      </Box>
 
-          <Typography variant="h5" sx={{ mt: 3 }}>
-            {period.charAt(0).toUpperCase() + period.slice(1)} Average Session Time
-          </Typography>
-          {rankings.averageSessionTimeRanking.map((item, index) => (
-            <Typography key={item.userId}>
-              {index + 1}. {usernames[item.userId] || item.userId} - {formatTime(item.value)}
-            </Typography>
-          ))}
-
-          <Typography variant="h5" sx={{ mt: 3 }}>
-            {period.charAt(0).toUpperCase() + period.slice(1)} Longest Session Time
-          </Typography>
-          {rankings.longestSessionTimeRanking.map((item, index) => (
-            <Typography key={item.userId}>
-              {index + 1}. {usernames[item.userId] || item.userId} - {formatTime(item.value)}
-            </Typography>
-          ))}
-        </>
-      )}
+      <Box sx={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={5}
+          rowsPerPageOptions={[5, 10, 25]}
+          disableColumnMenu
+          disableColumnFilter
+          disableColumnSelector
+          disableSelectionOnClick
+          loading={loading}
+          sx={{
+            '& .MuiDataGrid-cell': {
+              borderRight: '1px solid rgba(224, 224, 224, 1)',
+            },
+            '& .MuiDataGrid-columnHeader': {
+              borderRight: '1px solid rgba(224, 224, 224, 1)',
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            }
+          }}
+        />
+      </Box>
     </Container>
   );
 }

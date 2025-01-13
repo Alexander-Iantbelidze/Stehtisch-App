@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, query, where, doc, getDoc, getDocs, addDoc } from 'firebase/firestore';
-import { Box, TextField, List, ListItem, Button, Typography, Backdrop, Snackbar, Alert, IconButton } from '@mui/material';
+import { Box, TextField, List, ListItem, Button, Typography, Backdrop, Snackbar, Alert, IconButton, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 const Teams = ({ user }) => {
@@ -120,7 +120,19 @@ const Teams = ({ user }) => {
 
           return (
             <ListItem key={team.id} divider>
-              <Typography>{team.name}</Typography>
+              <Tooltip title={team.name}>
+                <Typography
+                  noWrap
+                  sx={{
+                    maxWidth: 150,
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {team.name}
+                </Typography>
+              </Tooltip>
               <Button
                 variant="contained"
                 color="primary"
