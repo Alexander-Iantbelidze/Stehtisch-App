@@ -15,7 +15,8 @@ import {
   Dialog,
   DialogContent,
   DialogActions,
-  Tooltip
+  Tooltip,
+  Grow
 } from '@mui/material';
 import { PlayArrow, Stop, ExitToApp } from '@mui/icons-material';
 import { auth, db } from '../firebase';
@@ -34,8 +35,9 @@ import Settings from '@mui/icons-material/Settings';
 import Teams from './Teams'; 
 import CreateTeam from './CreateTeam';
 import Notifications from './Notifications';
+import UserSettings from './UserSettings';
 
-function Dashboard({ user }) {
+function Dashboard({ user, setUser }) {
   const [isStanding, setIsStanding] = useState(false);
   const [startTime, setStartTime] = useState(null);
   
@@ -50,6 +52,7 @@ function Dashboard({ user }) {
   const [openTeamsDialog, setOpenTeamsDialog] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [openNotificationsDialog, setOpenNotificationsDialog] = useState(false);
+  const [openSettingsModal, setOpenSettingsModal] = useState(false);
 
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
@@ -196,6 +199,12 @@ function Dashboard({ user }) {
     signOut(auth);
   };
 
+  const handleSettingsClick = () => {
+    setOpenSettingsModal(true);
+  };
+
+ 
+
   // Helper function to format time
   const formatTime = (timeInSeconds) => {
     const hrs = Math.floor(timeInSeconds / 3600);
@@ -247,7 +256,19 @@ function Dashboard({ user }) {
           </Badge>
           )}
           <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
-            <IconButton color="inherit" component={Link} to="/settings">
+            <IconButton 
+              color="inherit" 
+              onClick={handleSettingsClick}
+              sx={{
+                transition: 'transform 0.3s ease-in-out',
+                '&:hover': { transform: 'rotate(30deg)' },
+                animation: openSettingsModal ? 'spin 0.5s ease-in-out' : 'none',
+                '@keyframes spin': {
+                  '0%': { transform: 'rotate(0deg)' },
+                  '100%': { transform: 'rotate(180deg)' }
+                }
+              }}
+            >
               <Settings />
             </IconButton>
             <IconButton color="inherit" onClick={handleLogout}>
@@ -399,6 +420,48 @@ function Dashboard({ user }) {
         <DialogActions>
           <Button onClick={() => setOpenNotificationsDialog(false)}>Schließen</Button>
         </DialogActions>
+      </Dialog>
+      <Dialog 
+        open={openSettingsModal} 
+        onClose={() => setOpenSettingsModal(false)}
+        TransitionComponent={Grow}
+        TransitionProps={{ timeout: 350, style: { transformOrigin: 'top right' } }}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            position: 'relative',
+            overflow: 'visible',
+            maxWidth: '500px',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-12px',
+              right: '30px',
+              width: '24px',
+              height: '24px',
+              backgroundColor: 'background.paper',
+              transform: 'rotate(45deg)',
+              zIndex: -1,
+            }
+          }
+        }}
+        sx={{
+          '& .MuiDialog-container': {
+            justifyContent: 'flex-end', 
+            alignItems: 'flex-start',
+            paddingTop: '64px',
+            paddingRight: '16px'
+          }
+        }}
+      >
+        <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
+          <UserSettings 
+            user={user} 
+            setUser={setUser} 
+            isModal={true} 
+            onClose={() => setOpenSettingsModal(false)} 
+          />
+        </DialogContent>
       </Dialog>
     </Box>
   );

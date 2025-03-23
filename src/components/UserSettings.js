@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc, collection, query, where, getDocs, getDoc } from 'firebase/firestore';
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { TextField, Button, Typography, Paper, Box, Backdrop, Snackbar, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { TextField, Button, Typography, Paper, Box, Backdrop, Snackbar, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Divider } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { leaveOldTeam } from '../utils/teamUtils';
 
-function UserSettings({ user, setUser }) {
+function UserSettings({ user, setUser, isModal = false, onClose }) {
   const [newUsername, setNewUsername] = useState('');
   const [password, setPassword] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -40,7 +41,14 @@ function UserSettings({ user, setUser }) {
         return;
       }
       await updateDoc(userRef, { username: newUsername });
-      setUser((prev) => ({ ...prev, username: newUsername }));
+      const updateUsernameIntheUI = async () => {
+        const updatedDoc = await getDoc(userRef);
+        setUser({
+          ...user,
+          ...updatedDoc.data()
+        });
+      };
+      updateUsernameIntheUI();
       showAlert('Benutzername aktualisiert!', 'success');
       setNewUsername('');
     } catch (error) {
@@ -115,11 +123,37 @@ function UserSettings({ user, setUser }) {
 
   return (
     <>
-      <Box sx={{ mt: 5, display: 'flex', justifyContent: 'center' }}>
-        <Paper sx={{ p: 3, width: '100%', maxWidth: 600 }}>
-          <Typography variant="h5" gutterBottom>
-            Einstellungen
-          </Typography>
+      <Box sx={{ 
+        mt: isModal ? 0 : 5, 
+        display: 'flex', 
+        justifyContent: 'center',
+        width: '100%' 
+      }}>
+        <Paper sx={{ 
+          p: 3, 
+          width: '100%', 
+          maxWidth: 600,
+          boxShadow: isModal ? 'none' : undefined,
+          borderRadius: isModal ? 0 : undefined
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 500 }}>
+              Einstellungen
+            </Typography>
+            {isModal && (
+              <IconButton 
+                onClick={onClose} 
+                size="small" 
+                color="primary"
+                sx={{ '&:hover': { transform: 'scale(1.1)' } }}
+              >
+                <CancelIcon />
+              </IconButton>
+            )}
+          </Box>
+          
+          <Divider sx={{ mb: 2 }} />
+          
           <Box sx={{ mb: 2 }}>
             <TextField
               label="Neuer Benutzername"
@@ -127,11 +161,18 @@ function UserSettings({ user, setUser }) {
               fullWidth
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
+              size={isModal ? "small" : "medium"}
             />
-            <Button variant="contained" sx={{ mt: 1 }} onClick={handleUpdateUsername}>
+            <Button 
+              variant="contained" 
+              sx={{ mt: 1 }} 
+              onClick={handleUpdateUsername}
+              size={isModal ? "small" : "medium"}
+            >
               Benutzername ändern
             </Button>
           </Box>
+          
           {showPassword && (
           <Box sx={{ mb: 2 }}>
             <TextField
@@ -142,11 +183,19 @@ function UserSettings({ user, setUser }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoFocus
+              size={isModal ? "small" : "medium"}
             />
           </Box>
           )}
+          
           <Box>
-            <Button variant="contained" color="error" onClick={handleDeleteAccount} onMouseEnter={handleShowPassword}>
+            <Button 
+              variant="contained" 
+              color="error" 
+              onClick={handleDeleteAccount} 
+              onMouseEnter={handleShowPassword}
+              size={isModal ? "small" : "medium"}
+            >
               Account löschen
             </Button>
           </Box>

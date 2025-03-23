@@ -73,7 +73,7 @@ function App() {
       <div className="App">
         {user ? (
           <Routes>
-            <Route path="/" element={<Dashboard user={user} currentTeam={currentTeam} />} />
+            <Route path="/" element={<Dashboard user={user} setUser={setUser} currentTeam={currentTeam} />} />
             <Route path="/teams" element={<Teams user={user} />} />
             <Route path="/create-team" element={<CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />} />
             <Route path="/notifications" element={<Notifications user={user} />} />
