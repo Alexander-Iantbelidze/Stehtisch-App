@@ -58,11 +58,11 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
   };
 
   const handleDeleteAccount = async () => {
-    setOpenDeleteDialog(true);
-  };
-
-  const handleShowPassword = async () => {
-    setShowPassword(true);
+    if (!showPassword) {
+      setShowPassword(true);
+    } else {
+      setOpenDeleteDialog(true);
+    }
   };
 
   const confirmDelete = async () => {
@@ -192,8 +192,7 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
             <Button 
               variant="contained" 
               color="error" 
-              onClick={handleDeleteAccount} 
-              onMouseEnter={handleShowPassword}
+              onClick={handleDeleteAccount}
               size={isModal ? "small" : "medium"}
             >
               Account löschen
