@@ -30,12 +30,12 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
-import { Link } from 'react-router-dom';
 import Settings from '@mui/icons-material/Settings';
 import Teams from './Teams'; 
 import CreateTeam from './CreateTeam';
 import Notifications from './Notifications';
 import UserSettings from './UserSettings';
+import Statistics from './Statistics';
 
 function Dashboard({ user, setUser }) {
   const [isStanding, setIsStanding] = useState(false);
@@ -53,6 +53,7 @@ function Dashboard({ user, setUser }) {
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [openNotificationsDialog, setOpenNotificationsDialog] = useState(false);
   const [openSettingsModal, setOpenSettingsModal] = useState(false);
+  const [openStatisticsDialog, setOpenStatisticsDialog] = useState(false);
 
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
@@ -234,8 +235,7 @@ function Dashboard({ user, setUser }) {
             <span>
               <Button 
                 color="inherit" 
-                component={Link} 
-                to="/statistics" 
+                onClick={() => currentTeam && setOpenStatisticsDialog(true)}
                 disabled={!currentTeam}
               >
                 Team Statistics
@@ -462,6 +462,19 @@ function Dashboard({ user, setUser }) {
             onClose={() => setOpenSettingsModal(false)} 
           />
         </DialogContent>
+      </Dialog>
+      <Dialog 
+        open={openStatisticsDialog} 
+        onClose={() => setOpenStatisticsDialog(false)}
+        maxWidth="xl"
+        fullWidth
+      >
+        <DialogContent>
+          <Statistics user={user} teamId={currentTeam?.id} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenStatisticsDialog(false)}>Schließen</Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );
