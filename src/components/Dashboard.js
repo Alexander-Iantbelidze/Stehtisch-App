@@ -16,9 +16,26 @@ import {
   DialogContent,
   DialogActions,
   Tooltip,
-  Grow
+  Grow,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  ListItemButton
 } from '@mui/material';
-import { PlayArrow, Stop, ExitToApp } from '@mui/icons-material';
+import {
+  PlayArrow,
+  Stop,
+  ExitToApp,
+  Settings,
+  Menu as MenuIcon,
+  BarChart as StatisticsIcon,
+  GroupAdd as JoinTeamIcon,
+  AddCircle as CreateTeamIcon,
+  Notifications as NotificationsIcon
+} from '@mui/icons-material';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
 import {
@@ -30,7 +47,6 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
-import Settings from '@mui/icons-material/Settings';
 import Teams from './Teams'; 
 import CreateTeam from './CreateTeam';
 import Notifications from './Notifications';
@@ -54,9 +70,12 @@ function Dashboard({ user, setUser }) {
   const [openNotificationsDialog, setOpenNotificationsDialog] = useState(false);
   const [openSettingsModal, setOpenSettingsModal] = useState(false);
   const [openStatisticsDialog, setOpenStatisticsDialog] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isAdmin = currentTeam?.adminId === user.uid;
 
   const fetchCurrentTeam = useCallback(async () => {
@@ -204,7 +223,23 @@ function Dashboard({ user, setUser }) {
     setOpenSettingsModal(true);
   };
 
- 
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
+  const handleMenuItemClick = (action) => {
+    setDrawerOpen(false);
+    
+    if (action === 'statistics' && currentTeam) {
+      setOpenStatisticsDialog(true);
+    } else if (action === 'joinTeam') {
+      setOpenTeamsDialog(true);
+    } else if (action === 'createTeam') {
+      setOpenCreateDialog(true);
+    } else if (action === 'notifications') {
+      setOpenNotificationsDialog(true);
+    }
+  };
 
   // Helper function to format time
   const formatTime = (timeInSeconds) => {
@@ -220,42 +255,121 @@ function Dashboard({ user, setUser }) {
     return `${secs}s`;
   };
 
+  // Sidebar content
+  const drawerContent = (
+    <Box sx={{ width: 250 }} role="presentation">
+      <List>
+        <ListItem>
+          <Typography variant="h6" fontWeight="bold">StehTisch Menu</Typography>
+        </ListItem>
+        <Divider />
+        
+        <ListItemButton
+          onClick={() => handleMenuItemClick('statistics')}
+          disabled={!currentTeam}
+        >
+          <ListItemIcon>
+            <StatisticsIcon color={currentTeam ? "primary" : "disabled"} />
+          </ListItemIcon>
+          <ListItemText primary="Team Statistics" />
+        </ListItemButton>
+        
+        <ListItemButton onClick={() => handleMenuItemClick('joinTeam')}>
+          <ListItemIcon>
+            <JoinTeamIcon color="primary" />
+          </ListItemIcon>
+          <ListItemText primary="Join Team" />
+        </ListItemButton>
+        
+        <ListItemButton onClick={() => handleMenuItemClick('createTeam')}>
+          <ListItemIcon>
+            <CreateTeamIcon color="primary" />
+          </ListItemIcon>
+          <ListItemText primary="Create Team" />
+        </ListItemButton>
+        
+        {isAdmin && (
+          <ListItemButton onClick={() => handleMenuItemClick('notifications')}>
+            <ListItemIcon>
+              <Badge badgeContent={unreadCount} color="error">
+                <NotificationsIcon color="primary" />
+              </Badge>
+            </ListItemIcon>
+            <ListItemText primary="Meine Benachrichtigungen" />
+          </ListItemButton>
+        )}
+      </List>
+    </Box>
+  );
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-      <AppBar position="static" sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-        <Toolbar sx={{ display: 'flex' }}>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            StandStrong ©
-          </Typography>
-          <Tooltip 
-            title={currentTeam ? "" : "Du musst erst einem Team beitreten"}
-            arrow
-            disableHoverListener={currentTeam !== null}
-          >
-            <span>
-              <Button 
-                color="inherit" 
-                onClick={() => currentTeam && setOpenStatisticsDialog(true)}
-                disabled={!currentTeam}
+      <AppBar position="static">
+        <Toolbar sx={{ 
+          display: 'flex', 
+          justifyContent: isTablet ? 'space-between' : 'flex-start'
+        }}>
+          {/* Left section */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {(isTablet || isMobile) && ( 
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={toggleDrawer}
+              sx={{ mr: 2 }}
+              aria-label="menu"
+            >
+              <MenuIcon />
+            </IconButton>
+            )}
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{
+                display: 'block',
+                flexGrow: isTablet ? 0 : 1
+              }}
+            >
+              StandStrong ©
+            </Typography>
+          </Box>
+          
+          {/* Desktop menu items - only show on larger screens */}
+          {!isTablet && (
+            <Box sx={{ display: 'flex', flexGrow: 1 }}>
+              <Tooltip 
+                title={currentTeam ? "" : "Du musst erst einem Team beitreten"}
+                arrow
+                disableHoverListener={currentTeam !== null}
               >
-                Team Statistics
+                <span>
+                  <Button 
+                    color="inherit" 
+                    onClick={() => currentTeam && setOpenStatisticsDialog(true)}
+                    disabled={!currentTeam}
+                  >
+                    Team Statistics
+                  </Button>
+                </span>
+              </Tooltip>
+              <Button color="inherit" onClick={() => setOpenTeamsDialog(true)}>
+                Join Team
               </Button>
-            </span>
-          </Tooltip>
-          <Button color="inherit" onClick={() => setOpenTeamsDialog(true)}>
-            Join Team
-          </Button>
-          <Button color="inherit" onClick={() => setOpenCreateDialog(true)}>
-            Create Team
-          </Button>
-          { isAdmin && ( 
-          <Badge badgeContent={unreadCount} color="error">
-            <Button color="inherit" onClick={() => setOpenNotificationsDialog(true)}>
-              Meine Benachrichtigungen
-            </Button>
-          </Badge>
+              <Button color="inherit" onClick={() => setOpenCreateDialog(true)}>
+                Create Team
+              </Button>
+              {isAdmin && ( 
+                <Badge badgeContent={unreadCount} color="error">
+                  <Button color="inherit" onClick={() => setOpenNotificationsDialog(true)}>
+                    Meine Benachrichtigungen
+                  </Button>
+                </Badge>
+              )}
+            </Box>
           )}
-          <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
+
+          {/* Right section - always visible */}
+          <Box sx={{ display: 'flex' }}>
             <IconButton 
               color="inherit" 
               onClick={handleSettingsClick}
@@ -268,15 +382,26 @@ function Dashboard({ user, setUser }) {
                   '100%': { transform: 'rotate(180deg)' }
                 }
               }}
+              aria-label="settings"
             >
               <Settings />
             </IconButton>
-            <IconButton color="inherit" onClick={handleLogout}>
+            <IconButton color="inherit" onClick={handleLogout} aria-label="logout">
               <ExitToApp />
             </IconButton>
           </Box>
         </Toolbar>
       </AppBar>
+      
+      {/* Responsive Drawer/Sidebar */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={toggleDrawer}
+      >
+        {drawerContent}
+      </Drawer>
+
       <Container
         maxWidth="xl"
         sx={{
@@ -372,7 +497,6 @@ function Dashboard({ user, setUser }) {
                 <Typography variant="body1">
                   Longest Session: {formatTime(longestSessionTime)}
                 </Typography>
-                {/* You can add more statistics here */}
               </Stack>
             </Box>
           </Paper>
@@ -396,43 +520,105 @@ function Dashboard({ user, setUser }) {
           </Paper>
         </Stack>
       </Container>
-      {/* Hier beginnen die ganzen Modal Dialogs die getriggert werden über die Appbar */}
-      <Dialog open={openTeamsDialog} onClose={() => setOpenTeamsDialog(false)}>
-        <DialogContent>
+
+      {/* Responsive Dialogs */}
+      <Dialog 
+        open={openTeamsDialog} 
+        onClose={() => setOpenTeamsDialog(false)}
+        fullScreen={isMobile}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            m: isMobile ? 0 : 2,
+            borderRadius: isMobile ? 0 : 2,
+            height: isMobile ? '100%' : 'auto',
+            maxHeight: isMobile ? '100%' : '90vh',
+          }
+        }}
+      >
+        <DialogContent sx={{ 
+          p: { xs: 2, sm: 3 },
+          height: isMobile ? 'calc(100vh - 64px)' : 'auto', 
+          overflow: 'auto'
+        }}>
           <Teams user={user} />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
           <Button onClick={() => setOpenTeamsDialog(false)}>Schließen</Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)}>
-        <DialogContent>
+
+      <Dialog 
+        open={openCreateDialog} 
+        onClose={() => setOpenCreateDialog(false)}
+        fullScreen={isMobile}
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            m: isMobile ? 0 : 2,
+            borderRadius: isMobile ? 0 : 2,
+            height: isMobile ? '100%' : 'auto',
+            maxHeight: isMobile ? '100%' : '90vh',
+          }
+        }}
+      >
+        <DialogContent sx={{ 
+          p: { xs: 2, sm: 3 },
+          height: isMobile ? 'calc(100vh - 64px)' : 'auto',
+          overflow: 'auto'
+        }}>
           <CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
           <Button onClick={() => setOpenCreateDialog(false)}>Schließen</Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={openNotificationsDialog} onClose={() => setOpenNotificationsDialog(false)}>
-        <DialogContent>
+
+      <Dialog 
+        open={openNotificationsDialog} 
+        onClose={() => setOpenNotificationsDialog(false)}
+        fullScreen={isMobile}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            m: isMobile ? 0 : 2,
+            borderRadius: isMobile ? 0 : 2,
+            height: isMobile ? '100%' : 'auto',
+            maxHeight: isMobile ? '100%' : '90vh',
+          }
+        }}
+      >
+        <DialogContent sx={{ 
+          p: { xs: 2, sm: 3 },
+          height: isMobile ? 'calc(100vh - 64px)' : 'auto',
+          overflow: 'auto'
+        }}>
           <Notifications user={user} />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
           <Button onClick={() => setOpenNotificationsDialog(false)}>Schließen</Button>
         </DialogActions>
       </Dialog>
+
       <Dialog 
         open={openSettingsModal} 
         onClose={() => setOpenSettingsModal(false)}
         TransitionComponent={Grow}
         TransitionProps={{ timeout: 350, style: { transformOrigin: 'top right' } }}
+        fullScreen={isMobile}
         PaperProps={{
           sx: {
-            borderRadius: '16px',
+            borderRadius: isMobile ? 0 : '16px',
             position: 'relative',
             overflow: 'visible',
-            maxWidth: '500px',
-            '&::before': {
+            width: isMobile ? '100%' : '500px',
+            maxWidth: isMobile ? '100%' : '500px',
+            height: isMobile ? '100%' : 'auto',
+            margin: isMobile ? 0 : undefined,
+            '&::before': isMobile ? {} : {
               content: '""',
               position: 'absolute',
               top: '-12px',
@@ -447,10 +633,10 @@ function Dashboard({ user, setUser }) {
         }}
         sx={{
           '& .MuiDialog-container': {
-            justifyContent: 'flex-end', 
-            alignItems: 'flex-start',
-            paddingTop: '64px',
-            paddingRight: '16px'
+            justifyContent: isMobile ? 'center' : 'flex-end', 
+            alignItems: isMobile ? 'center' : 'flex-start',
+            paddingTop: isMobile ? 0 : '64px',
+            paddingRight: isMobile ? 0 : '16px'
           }
         }}
       >
@@ -463,16 +649,30 @@ function Dashboard({ user, setUser }) {
           />
         </DialogContent>
       </Dialog>
+
       <Dialog 
         open={openStatisticsDialog} 
         onClose={() => setOpenStatisticsDialog(false)}
+        fullScreen={isMobile}
         maxWidth="xl"
         fullWidth
+        PaperProps={{
+          sx: {
+            m: isMobile ? 0 : 2,
+            borderRadius: isMobile ? 0 : 2,
+            height: isMobile ? '100%' : 'auto',
+            maxHeight: isMobile ? '100%' : '90vh'
+          }
+        }}
       >
-        <DialogContent>
+        <DialogContent sx={{ 
+          p: { xs: 1, sm: 2, md: 3 },
+          height: isMobile ? 'calc(100vh - 64px)' : 'auto',
+          overflow: 'auto'
+        }}>
           <Statistics user={user} teamId={currentTeam?.id} />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: { xs: 1, sm: 2 }, pt: 0 }}>
           <Button onClick={() => setOpenStatisticsDialog(false)}>Schließen</Button>
         </DialogActions>
       </Dialog>
