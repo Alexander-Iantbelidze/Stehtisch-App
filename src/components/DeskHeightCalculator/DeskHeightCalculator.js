@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Typography, Box, useTheme, useMediaQuery } from '@mui/material';
 import './DeskHeightCalculator.css';
 
@@ -71,17 +71,7 @@ const DeskHeightCalculator = () => {
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
-  useEffect(() => {
-    const heightRange = heightRangeCM.find(sub => sub[0] === height);
-    
-    if (heightRange) {
-      setSittingHeight(heightRange[1]);
-      setStandingHeight(heightRange[2]);
-      showDeskHeight(height, type);
-    }
-  }, [height, type]);
-
-  const showDeskHeight = (person_height, type) => {
+  const showDeskHeight = useCallback((person_height, type) => {
     const heightRange = heightRangeCM.find(sub => sub[0] === person_height);
     
     if (!heightRange) {
@@ -105,7 +95,19 @@ const DeskHeightCalculator = () => {
       if (deskTop) deskTop.style.marginTop = `-${diffHeight}px`;
       if (indicatorBox) indicatorBox.style.height = `${scale * 100}%`;
     }
-  };
+  }, [isLargeScreen]);
+
+  useEffect(() => {
+    const heightRange = heightRangeCM.find(sub => sub[0] === height);
+    
+    if (heightRange) {
+      setSittingHeight(heightRange[1]);
+      setStandingHeight(heightRange[2]);
+      showDeskHeight(height, type);
+    }
+  }, [height, type, showDeskHeight]);
+
+  
 
   const handleHeightChange = (e) => {
     setHeight(parseInt(e.target.value));
@@ -118,7 +120,8 @@ const DeskHeightCalculator = () => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden', 
+        overflow: 'hidden',
+        
       }}
     >
       {isLargeScreen ? (
@@ -127,7 +130,7 @@ const DeskHeightCalculator = () => {
           sx={{
             flex: 1,
             minHeight: 300,
-            overflow: 'hidden', 
+            overflow: 'hidden',  
           }}
         >
           <div className="desk">
