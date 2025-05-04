@@ -307,7 +307,7 @@ function Dashboard({ user, setUser }) {
       <AppBar position="static">
         <Toolbar sx={{ 
           display: 'flex', 
-          justifyContent: isTablet ? 'space-between' : 'flex-start'
+          justifyContent: 'space-between'
         }}>
           {/* Left section */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -333,10 +333,8 @@ function Dashboard({ user, setUser }) {
               StandStrong ©
             </Typography>
           </Box>
-          
-          {/* Desktop menu items - only show on larger screens */}
-          {!isTablet && (
-            <Box sx={{ display: 'flex', flexGrow: 1 }}>
+          {(!isTablet && !isMobile) && (
+            <Box>
               <Tooltip 
                 title={currentTeam ? "" : "Du musst erst einem Team beitreten"}
                 arrow
