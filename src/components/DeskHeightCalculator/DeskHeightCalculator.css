@@ -166,18 +166,19 @@ select:focus, input:focus {
 
 @media (min-width: 1100px) and (max-width: 1400px) {
   .desk {
-    transform: scale(0.25); /* Etwas kleiner für mittlere Bildschirme */
+    transform: scale(0.3); /* Etwas kleiner für mittlere Bildschirme */
+  }
+  .preview {
+    padding-bottom: 80px;
   }
 }
-
-/*Diese Media Query ist für den Macbook Air Bildschirm perfekt angepasst, das muss noch für alle anderen Bildschirme umgesetzt werden!*/
 
 @media (min-width: 1400px) and (max-width: 1800px) {
   .desk {
     transform: scale(0.35); /*z.B. Macbook Air Bildschirm*/
   }
   .preview {
-    padding-bottom: 55px;
+    padding-bottom: 80px;
   }
 }
 
