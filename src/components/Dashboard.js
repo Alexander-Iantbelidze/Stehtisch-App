@@ -19,10 +19,8 @@ import {
   Grow,
   Drawer,
   List,
-  ListItem,
   ListItemIcon,
   ListItemText,
-  Divider,
   ListItemButton
 } from '@mui/material';
 import {
@@ -259,11 +257,6 @@ function Dashboard({ user, setUser }) {
   const drawerContent = (
     <Box sx={{ width: 250 }} role="presentation">
       <List>
-        <ListItem>
-          <Typography variant="h6" fontWeight="bold">StehTisch Menu</Typography>
-        </ListItem>
-        <Divider />
-        
         <ListItemButton
           onClick={() => handleMenuItemClick('statistics')}
           disabled={!currentTeam}
@@ -295,7 +288,7 @@ function Dashboard({ user, setUser }) {
                 <NotificationsIcon color="primary" />
               </Badge>
             </ListItemIcon>
-            <ListItemText primary="Meine Benachrichtigungen" />
+            <ListItemText primary="Notifications" />
           </ListItemButton>
         )}
       </List>
