@@ -256,7 +256,7 @@ function Dashboard({ user, setUser }) {
   // Sidebar content
   const drawerContent = (
     <Box sx={{ width: 250 }} role="presentation">
-      <List>
+      <List sx={{ p: 0, '& .MuiListItemButton-root': { px: 2 }, '& .MuiListItemIcon-root': { minWidth: 0, mr: 2 }, '& .MuiListItemText-root': { mr: 2, whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' } }}>
         <ListItemButton
           onClick={() => handleMenuItemClick('statistics')}
           disabled={!currentTeam}
