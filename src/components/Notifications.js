@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db } from '../firebase';
 import { 
   collection, 
@@ -14,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { leaveOldTeam } from '../utils/teamUtils';
 
 const Notifications = ({ user }) => {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -61,8 +63,7 @@ const Notifications = ({ user }) => {
       // 5. Prüfen, ob das Team existiert
       const teamSnap = await getDoc(teamRef);
       if (!teamSnap.exists()) {
-        
-      showAlert('Team existiert nicht mehr.', 'error');
+        showAlert(t('teamNotExist'), 'error');
         return;
       }
   
@@ -70,10 +71,9 @@ const Notifications = ({ user }) => {
       const notifRef = doc(db, 'notifications', notif.id);
       await updateDoc(notifRef, { read: true });
   
-      showAlert(`Beitritt zum Team "${teamSnap.data().name}" akzeptiert!`, 'info');
+      showAlert(t('acceptSuccess', { teamName: teamSnap.data().name }), 'info');
     } catch (error) {
-      
-      showAlert('Fehler beim Akzeptieren der Anfrage.', 'error');
+      showAlert(t('acceptError'), 'error');
     }
   };
 
@@ -87,10 +87,9 @@ const Notifications = ({ user }) => {
       const notifRef = doc(db, 'notifications', notif.id);
       await updateDoc(notifRef, { read: true });
 
-      showAlert('Beitritt abgelehnt!', 'error');
+      showAlert(t('rejectSuccess'), 'error');
     } catch (error) {
-      
-      showAlert('Fehler beim Ablehnen der Anfrage.', 'error');
+      showAlert(t('rejectError'), 'error');
     }
   };
 
@@ -99,7 +98,7 @@ const Notifications = ({ user }) => {
   return (
     <Box sx={{ padding: 3 }}>
       {notifications.length === 0 ? (
-        <Typography variant="h5">Keine neuen Benachrichtigungen.</Typography>
+        <Typography variant="h5">{t('noNotifications')}</Typography>
       ) : (
         <List>
           {notifications.map((notif) => (
@@ -117,14 +116,14 @@ const Notifications = ({ user }) => {
                   color="success"
                   onClick={() => handleAccept(notif)}
                 >
-                  Akzeptieren
+                  {t('accept')}
                 </Button>
                 <Button
                   variant="contained"
                   color="error"
                   onClick={() => handleReject(notif)}
                 >
-                  Ablehnen
+                  {t('reject')}
                 </Button>
               </Box>
             </ListItem>

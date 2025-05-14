@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db } from '../firebase';
 import { collection, query, where, doc, getDoc, getDocs, addDoc } from 'firebase/firestore';
 import { Box, TextField, List, ListItem, Button, Typography, Backdrop, Snackbar, Alert, IconButton, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 const Teams = ({ user }) => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [teams, setTeams] = useState([]);
   const [joinRequestsMap, setJoinRequestsMap] = useState({});
@@ -103,9 +105,9 @@ const Teams = ({ user }) => {
 
   return (
     <Box>
-      <Typography variant="h4">Dein Team finden!</Typography>
+      <Typography variant="h4">{t('teamsHeader')}</Typography>
       <TextField
-        label="Team suchen"
+        label={t('searchTeam')}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         fullWidth
@@ -141,10 +143,10 @@ const Teams = ({ user }) => {
                 sx={{ ml: 'auto' }}
               >
                 {isCurrentTeam 
-                  ? 'Aktuelles Team' 
+                  ? t('currentTeam') 
                   : requestStatus === 'pending' 
-                    ? 'Beitrittsanfrage ausstehend'
-                    : 'Team beitreten'
+                    ? t('pendingRequest')
+                    : t('joinTeamBtn')
                 }
               </Button>
             </ListItem>
@@ -162,7 +164,6 @@ const Teams = ({ user }) => {
         open={openSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         onClose={() => {}}
-        
       >
         <Alert
         severity={snackbarSeverity}

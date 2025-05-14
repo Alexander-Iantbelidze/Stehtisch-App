@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { setDoc, doc, query, collection, where, getDocs } from 'firebase/firestore';
@@ -9,6 +10,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 
 function Login() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -19,7 +21,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSignUp && /@/.test(username)) {
-      setError('Benutzername darf keine E-Mail-Adresse sein.');
+      setError(t('usernameNoEmail'));
       setOpen(true);
       return;
     }
@@ -53,19 +55,19 @@ function Login() {
       let errorMessage = '';
       switch (error.code) {
         case 'auth/invalid-email':
-          errorMessage = 'Keine gültige E-Mail-Adresse.';
+          errorMessage = t('invalidEmail');
           break;
         case 'auth/invalid-credential':
-          errorMessage = 'E-Mail-Adresse/Passwort ist falsch oder E-Mail-Adresse ist nicht registriert.';
+          errorMessage = t('invalidCredential');
           break;
         case 'auth/weak-password':
-          errorMessage = 'Passwort muss mindestens 6 Zeichen lang sein.';
+          errorMessage = t('weakPassword');
           break;
         case 'auth/email-already-in-use':
-          errorMessage = 'Diese E-Mail wird bereits verwendet.';
+          errorMessage = t('emailInUse');
           break;
         default:
-          errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.';
+          errorMessage = t('genericError');
       }
       setError(errorMessage);
       setOpen(true);
@@ -74,21 +76,21 @@ function Login() {
 
   const handlePasswordReset = async () => {
     if (!email) {
-      setError('Bitte geben Sie Ihre E-Mail-Adresse ein.');
+      setError(t('enterEmail'));
       setOpen(true);
       return;
     }
     try {
       await sendPasswordResetEmail(auth, email);
       setError(
-        'Ein Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail-Adresse gesendet.'
+        t('resetLinkSent')
       );
       setOpen(true);
     } catch (error) {
       let errorMessage =
-        'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.';
+        t('genericError');
       if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Ungültige E-Mail-Adresse.';
+        errorMessage = t('resetInvalidEmail');
       } 
       setError(errorMessage);
       setOpen(true);
@@ -109,7 +111,7 @@ function Login() {
       >
         <Paper elevation={3} sx={{ padding: 3, width: '100%' }}>
           <Typography component="h1" variant="h5">
-            {isSignUp ? 'Sign Up' : 'Sign In'}
+            {isSignUp ? t('signUp') : t('signIn')}
           </Typography>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
@@ -117,7 +119,7 @@ function Login() {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label={t('emailAddress')}
               name="email"
               autoComplete="email"
               autoFocus
@@ -130,7 +132,7 @@ function Login() {
                 required
                 fullWidth
                 name="username"
-                label="Benutzername"
+                label={t('username')}
                 type="text"
                 id="username"
                 autoComplete="username"
@@ -144,7 +146,7 @@ function Login() {
               required
               fullWidth
               name="password"
-              label="Password"
+              label={t('password')}
               type="password"
               id="password"
               autoComplete="current-password"
@@ -157,7 +159,7 @@ function Login() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              {isSignUp ? 'Sign Up' : 'Sign In'}
+              {isSignUp ? t('signUp') : t('signIn')}
             </Button>
             <Button
               fullWidth
@@ -165,8 +167,8 @@ function Login() {
               onClick={() => setIsSignUp(!isSignUp)}
             >
                {isSignUp
-                ? 'Bereits registriert? Hier anmelden'
-                : 'Noch keinen Account? Hier registrieren'}
+                ? t('alreadyRegistered')
+                : t('noAccount')}
             </Button>
             {!isSignUp && (
               <Button
@@ -175,7 +177,7 @@ function Login() {
                 onClick={handlePasswordReset}
                 sx={{ mt: 1 }}
               >
-                Passwort vergessen?
+                {t('forgotPassword')}
               </Button>
             )}
           </Box>

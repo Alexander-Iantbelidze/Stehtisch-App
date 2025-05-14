@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AppBar,
   Toolbar,
@@ -50,8 +51,10 @@ import CreateTeam from './CreateTeam';
 import Notifications from './Notifications';
 import UserSettings from './UserSettings';
 import Statistics from './Statistics';
+import LanguageSwitcher from './LanguageSwitcher';
 
 function Dashboard({ user, setUser }) {
+  const { t } = useTranslation();
   const [isStanding, setIsStanding] = useState(false);
   const [startTime, setStartTime] = useState(null);
   
@@ -264,21 +267,21 @@ function Dashboard({ user, setUser }) {
           <ListItemIcon>
             <StatisticsIcon color={currentTeam ? "primary" : "disabled"} />
           </ListItemIcon>
-          <ListItemText primary="Team Statistics" />
+          <ListItemText primary={t('teamStatistics')} />
         </ListItemButton>
         
         <ListItemButton onClick={() => handleMenuItemClick('joinTeam')}>
           <ListItemIcon>
             <JoinTeamIcon color="primary" />
           </ListItemIcon>
-          <ListItemText primary="Join Team" />
+          <ListItemText primary={t('joinTeam')} />
         </ListItemButton>
         
         <ListItemButton onClick={() => handleMenuItemClick('createTeam')}>
           <ListItemIcon>
             <CreateTeamIcon color="primary" />
           </ListItemIcon>
-          <ListItemText primary="Create Team" />
+          <ListItemText primary={t('createTeam')} />
         </ListItemButton>
         
         {isAdmin && (
@@ -288,7 +291,7 @@ function Dashboard({ user, setUser }) {
                 <NotificationsIcon color="primary" />
               </Badge>
             </ListItemIcon>
-            <ListItemText primary="Notifications" />
+            <ListItemText primary={t('myNotifications')} />
           </ListItemButton>
         )}
       </List>
@@ -323,7 +326,7 @@ function Dashboard({ user, setUser }) {
                 flexGrow: isTablet ? 0 : 1
               }}
             >
-              StandStrong ©
+              {t('appName')}
             </Typography>
           </Box>
           {(!isTablet && !isMobile) && (
@@ -339,20 +342,20 @@ function Dashboard({ user, setUser }) {
                     onClick={() => currentTeam && setOpenStatisticsDialog(true)}
                     disabled={!currentTeam}
                   >
-                    Team Statistics
+                    {t('teamStatistics')}
                   </Button>
                 </span>
               </Tooltip>
               <Button color="inherit" onClick={() => setOpenTeamsDialog(true)}>
-                Join Team
+                {t('joinTeam')}
               </Button>
               <Button color="inherit" onClick={() => setOpenCreateDialog(true)}>
-                Create Team
+                {t('createTeam')}
               </Button>
               {isAdmin && ( 
                 <Badge badgeContent={unreadCount} color="error">
                   <Button color="inherit" onClick={() => setOpenNotificationsDialog(true)}>
-                    Meine Benachrichtigungen
+                    {t('myNotifications')}
                   </Button>
                 </Badge>
               )}
@@ -361,6 +364,7 @@ function Dashboard({ user, setUser }) {
 
           {/* Right section - always visible */}
           <Box sx={{ display: 'flex' }}>
+            <LanguageSwitcher />
             <IconButton 
               color="inherit" 
               onClick={handleSettingsClick}
@@ -471,7 +475,7 @@ function Dashboard({ user, setUser }) {
               startIcon={isStanding ? <Stop /> : <PlayArrow />}
               sx={{ mt: 2, width: '100%', maxWidth: 200 }}
             >
-              {isStanding ? 'Stop Standing' : 'Start Standing'}
+              {isStanding ? t('stopStanding') : t('startStanding')}
             </Button>
 
             {/* Statistics Overview */}
@@ -536,7 +540,7 @@ function Dashboard({ user, setUser }) {
           <Teams user={user} />
         </DialogContent>
         <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
-          <Button onClick={() => setOpenTeamsDialog(false)}>Schließen</Button>
+          <Button onClick={() => setOpenTeamsDialog(false)}>{t('close')}</Button>
         </DialogActions>
       </Dialog>
 
@@ -563,7 +567,7 @@ function Dashboard({ user, setUser }) {
           <CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />
         </DialogContent>
         <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
-          <Button onClick={() => setOpenCreateDialog(false)}>Schließen</Button>
+          <Button onClick={() => setOpenCreateDialog(false)}>{t('close')}</Button>
         </DialogActions>
       </Dialog>
 
@@ -590,7 +594,7 @@ function Dashboard({ user, setUser }) {
           <Notifications user={user} />
         </DialogContent>
         <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
-          <Button onClick={() => setOpenNotificationsDialog(false)}>Schließen</Button>
+          <Button onClick={() => setOpenNotificationsDialog(false)}>{t('close')}</Button>
         </DialogActions>
       </Dialog>
 
@@ -664,7 +668,7 @@ function Dashboard({ user, setUser }) {
           <Statistics user={user} teamId={currentTeam?.id} />
         </DialogContent>
         <DialogActions sx={{ p: { xs: 1, sm: 2 }, pt: 0 }}>
-          <Button onClick={() => setOpenStatisticsDialog(false)}>Schließen</Button>
+          <Button onClick={() => setOpenStatisticsDialog(false)}>{t('close')}</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Typography, Box, useTheme, useMediaQuery } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import './DeskHeightCalculator.css';
 
 const heightRangeCM = [
@@ -62,6 +63,7 @@ const heightRangeCM = [
 ];
 
 const DeskHeightCalculator = () => {
+  const { t } = useTranslation();
   const [height, setHeight] = useState(150);
   const [type, setType] = useState(0); // 0 für sitting, 1 für standing
   const [deskHeight, setDeskHeight] = useState(56.5);
@@ -171,29 +173,30 @@ const DeskHeightCalculator = () => {
             </svg>
           </div>
         </Box>
-      ) :  
+      ) : (
       <Box sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-      <Typography variant="h6" sx={{ mb: 1 }}>Recommended desk heights:</Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="body1">Sitting:</Typography>
-        <Typography variant="body1" fontWeight="bold">{sittingHeight.toFixed(1)} cm</Typography>
+        <Typography variant="h6" sx={{ mb: 1 }}>{t('recommendedHeights')}</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+          <Typography variant="body1">{t('sitting')}</Typography>
+          <Typography variant="body1" fontWeight="bold">{sittingHeight.toFixed(1)} cm</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Typography variant="body1">{t('standingText')}</Typography>
+          <Typography variant="body1" fontWeight="bold">{standingHeight.toFixed(1)} cm</Typography>
+        </Box>
+        <Box sx={{ mt: 2, p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+          <Typography variant="body2" fontWeight="medium">
+            {t('currentSetting', { position: type === 0 ? t('sitting') : t('standingText') })} 
+            <span style={{ fontWeight: 'bold', marginLeft: '8px' }}>
+              {deskHeight.toFixed(1)} cm
+            </span>
+          </Typography>
+        </Box>
       </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography variant="body1">Standing:</Typography>
-        <Typography variant="body1" fontWeight="bold">{standingHeight.toFixed(1)} cm</Typography>
-      </Box>
-      <Box sx={{ mt: 2, p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-        <Typography variant="body2" fontWeight="medium">
-          Current setting ({type === 0 ? 'Sitting' : 'Standing'}): 
-          <span style={{ fontWeight: 'bold', marginLeft: '8px' }}>
-            {deskHeight.toFixed(1)} cm
-          </span>
-        </Typography>
-      </Box>
-    </Box>} 
+      )}
       <Box className="form" sx={{ mt: 2 }}>
         <div className="form_group">
-          <Typography component="label" htmlFor="height">Your height (cm)</Typography>
+          <Typography component="label" htmlFor="height">{t('yourHeightLabel')}</Typography>
           <input 
             type="number"
             id="height" 
@@ -205,10 +208,10 @@ const DeskHeightCalculator = () => {
           />
         </div>
         <div className="form_group">
-          <Typography component="label" htmlFor="type">Position at desk</Typography>
+          <Typography component="label" htmlFor="type">{t('positionLabel')}</Typography>
           <select id="type" value={type} onChange={(e) => setType(Number(e.target.value))}>
-            <option value={0}>Sitting</option>
-            <option value={1}>Standing</option>
+            <option value={0}>{t('sitting')}</option>
+            <option value={1}>{t('standingText')}</option>
           </select>
         </div>
       </Box>

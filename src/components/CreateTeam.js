@@ -5,8 +5,10 @@ import { db } from '../firebase';
 import { leaveOldTeam } from '../utils/teamUtils';
 import { Backdrop, Snackbar, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTranslation } from 'react-i18next';
 
 const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
+  const { t } = useTranslation();
   const [teamName, setTeamName] = useState('');
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -22,7 +24,7 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
 
   const handleCreate = async () => {
     if (!teamName.trim()) {
-      showAlert('Bitte einen Teamnamen eingeben.', 'warning');
+      showAlert(t('enterTeamName'), 'warning');
       setLoading(false);
       return;
     } 
@@ -34,7 +36,7 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
       const q = query(collection(db, 'teams'), where('name', '==', teamName.trim()));
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
-        showAlert('Team existiert bereits.', 'warning');
+        showAlert(t('teamExists'), 'warning');
         setLoading(false);
         return;
       }
@@ -61,10 +63,10 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
         createdAt: new Date(),
       });
 
-      showAlert(`Team "${teamName}" erstellt!`, 'success');
+      showAlert(t('teamCreated', { teamName }), 'success');
       setTeamName('');
     } catch (error) {
-      showAlert('Fehler beim Erstellen oder Wechseln des Teams.', 'error');
+      showAlert(t('errorCreatingOrSwitchingTeam'), 'error');
     } finally {
       setLoading(false);
     }
@@ -93,10 +95,10 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
         createdAt: new Date(),
       });
 
-      showAlert(`Team "${teamName}" erstellt!`, 'success');
+      showAlert(t('teamCreated', { teamName }), 'success');
       setTeamName('');
     } catch (error) {
-      showAlert('Fehler beim Erstellen oder Wechseln des Teams.', 'error');
+      showAlert(t('errorCreatingOrSwitchingTeam'), 'error');
     } finally {
       setLoading(false);
       setOpenSwitchDialog(false);
@@ -106,9 +108,9 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
   return (
     <>
       <Box>
-        <Typography variant="h4">Neues Team erstellen</Typography>
+        <Typography variant="h4">{t('createNewTeam')}</Typography>
         <TextField
-          label="Teamname"
+          label={t('teamNameLabel')}
           value={teamName}
           onChange={(e) => setTeamName(e.target.value)}
           fullWidth
@@ -120,21 +122,21 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
           onClick={handleCreate}
           disabled={loading}
         >
-          {loading ? 'Erstelle Team...' : 'Team erstellen'}
+          {loading ? t('creatingTeam') : t('createTeam')}
         </Button>
       </Box>
 
       {/* Dialog zum Teamwechsel */}
       <Dialog open={openSwitchDialog} onClose={() => setOpenSwitchDialog(false)}>
-        <DialogTitle>Team wechseln</DialogTitle>
+        <DialogTitle>{t('switchTeamTitle')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Du bist bereits im Team "{currentTeam?.name}". Möchtest du wirklich wechseln?
+            {t('switchTeamMessage', { currentTeam: currentTeam?.name })}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenSwitchDialog(false)}>Abbrechen</Button>
-          <Button onClick={confirmSwitchTeam} autoFocus>Bestätigen</Button>
+          <Button onClick={() => setOpenSwitchDialog(false)}>{t('cancel')}</Button>
+          <Button onClick={confirmSwitchTeam} autoFocus>{t('confirm')}</Button>
         </DialogActions>
       </Dialog>
 
