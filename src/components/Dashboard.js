@@ -430,7 +430,7 @@ function Dashboard({ user, setUser }) {
             }}
           >
             <Typography variant="h4" gutterBottom>
-              Welcome, {user.username}
+              {t('welcome', { username: user.username })}
             </Typography>
             
             <Box
@@ -480,17 +480,16 @@ function Dashboard({ user, setUser }) {
 
             {/* Statistics Overview */}
             <Box sx={{ mt: 4, width: '100%' }}>
-              <Typography variant="h6">Your Statistics</Typography>
+              <Typography variant="h6">{t('yourStatistics')}</Typography>
               <Stack spacing={1} sx={{ mt: 1 }}>
                 <Typography variant="body1">
-                  Daily Standing Time: {formatTime(dailyStandingTime)}
+                  {t('dailyStandingTime')}: {formatTime(dailyStandingTime)}
                 </Typography>
                 <Typography variant="body1">
-                  Average Session Time: {formatTime(averageStandingTime)}
+                  {t('averageSessionTime')}: {formatTime(averageStandingTime)}
                 </Typography>
-                
                 <Typography variant="body1">
-                  Longest Session: {formatTime(longestSessionTime)}
+                  {t('longestSession')}: {formatTime(longestSessionTime)}
                 </Typography>
               </Stack>
             </Box>

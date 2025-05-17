@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db } from '../firebase';
 import {
   collection,
@@ -19,6 +20,7 @@ import { DataGrid } from '@mui/x-data-grid';
 
 
 function Statistics({ teamId }) {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState('daily');
   const [rankings, setRankings] = useState({});
   const [usernames, setUsernames] = useState({});
@@ -31,19 +33,19 @@ function Statistics({ teamId }) {
   const columns = [
     { 
       field: 'rank', 
-      headerName: 'Rank', 
+      headerName: t('rank'), 
       width: 100,
       sortable: false
     },
     { 
       field: 'username', 
-      headerName: 'Username', 
+      headerName: t('usernameCol'), 
       width: 200,
       sortable: false
     },
     { 
       field: 'totalTime', 
-      headerName: 'Total Standing Time', 
+      headerName: t('totalStandingTimeCol'), 
       width: 200,
       sortable: false,
       valueFormatter: (value) => formatTime(value),
@@ -51,7 +53,7 @@ function Statistics({ teamId }) {
     },
     { 
       field: 'avgTime', 
-      headerName: 'Average Session Time', 
+      headerName: t('averageSessionTimeCol'), 
       width: 200,
       sortable: false,
       valueFormatter: (value) => formatTime(value),
@@ -59,7 +61,7 @@ function Statistics({ teamId }) {
     },
     { 
       field: 'longestSession', 
-      headerName: 'Longest Session', 
+      headerName: t('longestSessionCol'), 
       width: 200,
       sortable: false,
       valueFormatter: (value) => formatTime(value),
@@ -67,7 +69,7 @@ function Statistics({ teamId }) {
     },
     { 
       field: 'sessions', 
-      headerName: 'Total Sessions', 
+      headerName: t('totalSessionsCol'), 
       width: 150,
       sortable: false,
       type: 'number'
@@ -266,14 +268,14 @@ function Statistics({ teamId }) {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       <Typography variant="h4" gutterBottom>
-        Team Statistics – {teamName}
+        {t('teamStatistics')} – {teamName}
       </Typography>
 
       <Box sx={{ mb: 3 }}>
         <Select value={period} onChange={(e) => setPeriod(e.target.value)}>
           {periods.map((p) => (
             <MenuItem key={p} value={p}>
-              {p.charAt(0).toUpperCase() + p.slice(1)}
+              {t(p)}
             </MenuItem>
           ))}
         </Select>

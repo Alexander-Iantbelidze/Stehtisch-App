@@ -152,7 +152,7 @@ const DeskHeightCalculator = () => {
                     <button>3</button>
                     <button>4</button>
                   </div>
-                  Autonomous
+                  {t('autonomous')}
                 </div>
               </div>
               <svg width="775" height="349" viewBox="0 0 775 349" fill="none" xmlns="http://www.w3.org/2000/svg" id="desk__legs" className="desk__legs">

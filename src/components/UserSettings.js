@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { doc, updateDoc, deleteDoc, collection, query, where, getDocs, getDoc } from 'firebase/firestore';
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { TextField, Button, Typography, Paper, Box, Backdrop, Snackbar, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Divider } from '@mui/material';
@@ -9,6 +10,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import { leaveOldTeam } from '../utils/teamUtils';
 
 function UserSettings({ user, setUser, isModal = false, onClose }) {
+  const { t } = useTranslation();
   const [newUsername, setNewUsername] = useState('');
   const [password, setPassword] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -28,7 +30,7 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
   const handleUpdateUsername = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (emailRegex.test(newUsername)) {
-      showAlert('Bitte keine E-Mail-Adresse als Benutzername verwenden.', 'warning');
+      showAlert(t('usernameNoEmail'), 'warning');
       return;
     }
     const userRef = doc(db, 'users', user.uid);
@@ -37,7 +39,7 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
       const q = query(collection(db, 'users'), where('username', '==', newUsername));
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
-        showAlert('Benutzername bereits vergeben.', 'warning');
+        showAlert(t('usernameTaken'), 'warning');
         return;
       }
       await updateDoc(userRef, { username: newUsername });
@@ -49,11 +51,11 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
         });
       };
       updateUsernameIntheUI();
-      showAlert('Benutzername aktualisiert!', 'success');
+      showAlert(t('usernameUpdated'), 'success');
       setNewUsername('');
     } catch (error) {
       console.error(error);
-      showAlert('Fehler beim Ändern des Benutzernamens.', 'error');
+      showAlert(t('usernameUpdateError'), 'error');
     }
   };
 
@@ -68,7 +70,7 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
   const confirmDelete = async () => {
     setOpenDeleteDialog(false);
     if (!password.trim()) {
-      showAlert('Bitte geben Sie Ihr Passwort ein.', 'warning');
+      showAlert(t('noPasswordError'), 'warning');
       return;
     }
     try {
@@ -114,9 +116,9 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
     } catch (error) {
       console.error(error);
       if (error.code === 'auth/invalid-credential') {
-        showAlert('Das eingegebene Passwort war falsch.', 'error');
+        showAlert(t('invalidPassword'), 'error');
       } else {
-        showAlert('Fehler beim Löschen des Accounts.', 'error');
+        showAlert(t('deleteAccountError'), 'error');
       }
     }
   };
@@ -138,7 +140,7 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
         }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h5" sx={{ fontWeight: 500 }}>
-              Einstellungen
+              {t('accountSettings')}
             </Typography>
             {isModal && (
               <IconButton 
@@ -156,7 +158,7 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
           
           <Box sx={{ mb: 2 }}>
             <TextField
-              label="Neuer Benutzername"
+              label={t('newUsernameLabel')}
               variant="outlined"
               fullWidth
               value={newUsername}
@@ -169,14 +171,14 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
               onClick={handleUpdateUsername}
               size={isModal ? "small" : "medium"}
             >
-              Benutzername ändern
+              {t('changeUsername')}
             </Button>
           </Box>
           
           {showPassword && (
           <Box sx={{ mb: 2 }}>
             <TextField
-              label="Passwort"
+              label={t('password')}
               type="password"
               variant="outlined"
               fullWidth
@@ -195,23 +197,23 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
               onClick={handleDeleteAccount}
               size={isModal ? "small" : "medium"}
             >
-              Account löschen
+              {t('deleteAccount')}
             </Button>
           </Box>
         </Paper>
       </Box>
 
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>Account löschen</DialogTitle>
+        <DialogTitle>{t('deleteAccountTitle')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Sind Sie sicher, dass Sie Ihren Account unwiderruflich löschen möchten?
+            {t('deleteAccountMessage')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Abbrechen</Button>
+          <Button onClick={() => setOpenDeleteDialog(false)}>{t('cancel')}</Button>
           <Button onClick={confirmDelete} autoFocus>
-            Löschen
+            {t('confirmDelete')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -42,6 +42,7 @@ const resources = {
       "teamNameLabel": "Team Name",
       "creatingTeam": "Creating team...",
       "createTeam": "Create team",
+      "enterTeamName": "Please enter a team name.",
       "teamExists": "Team already exists.",
       "teamCreated": "Team '{{teamName}}' created!",
       "switchTeamTitle": "Switch Team",
@@ -77,7 +78,29 @@ const resources = {
       "invalidPassword": "The entered password was incorrect.",
       "usernameUpdated": "Username updated!",
       "usernameUpdateError": "Error updating username.",
-      "deleteAccountError": "Error deleting account."
+      "deleteAccountError": "Error deleting account.",
+      // Dashboard and Statistics
+      "yourStatistics": "Your Statistics",
+      // Periods
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      // DataGrid column headers
+      "rank": "Rank",
+      "usernameCol": "Username",
+      "totalStandingTimeCol": "Total Standing Time",
+      "averageSessionTimeCol": "Average Session Time",
+      "longestSessionCol": "Longest Session",
+      "totalSessionsCol": "Total Sessions",
+      // DeskHeightCalculator
+      "autonomous": "Autonomous",
+      "recommendedHeights": "Recommended Desk Heights",
+      "sitting": "Sitting",
+      "standingText": "Standing",
+      "currentSetting": "Current {{position}} height:",
+      "yourHeightLabel": "Your height (cm)",
+      "positionLabel": "Position"
     }
   },
   de: {
@@ -155,7 +178,29 @@ const resources = {
       "invalidPassword": "Das eingegebene Passwort war falsch.",
       "usernameUpdated": "Benutzername aktualisiert!",
       "usernameUpdateError": "Fehler beim Ändern des Benutzernamens.",
-      "deleteAccountError": "Fehler beim Löschen des Accounts."
+      "deleteAccountError": "Fehler beim Löschen des Accounts.",
+      // Dashboard and Statistics
+      "yourStatistics": "Deine Statistiken",
+      // Periods
+      "daily": "Täglich",
+      "weekly": "Wöchentlich",
+      "monthly": "Monatlich",
+      "yearly": "Jährlich",
+      // DataGrid column headers
+      "rank": "Rang",
+      "usernameCol": "Benutzername",
+      "totalStandingTimeCol": "Gesamtstehzeit",
+      "averageSessionTimeCol": "Durchschnittliche Sitzungsdauer",
+      "longestSessionCol": "Längste Sitzung",
+      "totalSessionsCol": "Sitzungen insgesamt",
+      // DeskHeightCalculator
+      "autonomous": "Autonom",
+      "recommendedHeights": "Empfohlene Tischhöhen",
+      "sitting": "Sitzen",
+      "standingText": "Stehen",
+      "currentSetting": "Aktuelle {{position}}höhe:",
+      "yourHeightLabel": "Deine Körpergröße (cm)",
+      "positionLabel": "Position"
     }
   }
 };
