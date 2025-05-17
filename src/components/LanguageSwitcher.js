@@ -5,6 +5,7 @@ import { Select, MenuItem } from '@mui/material';
 function LanguageSwitcher() {
   const { i18n } = useTranslation();
   const changeLanguage = (lng) => {
+    localStorage.setItem('language', lng);
     i18n.changeLanguage(lng);
   };
 
