@@ -6,20 +6,22 @@ import { leaveOldTeam } from '../utils/teamUtils';
 import { Backdrop, Snackbar, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
+import useSnackbar from '../hooks/useSnackbar';
 
 const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
   const { t } = useTranslation();
   const [teamName, setTeamName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+  const { openSnackbar, snackbarMessage, snackbarSeverity, showAlert, closeSnackbar } = useSnackbar();
   const [openSwitchDialog, setOpenSwitchDialog] = useState(false);
 
-  const showAlert = (message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
+  const createTeamHelper = async () => {
+    return await addDoc(collection(db, 'teams'), {
+      name: teamName.trim(),
+      adminId: user.uid,
+      members: [user.uid],
+      createdAt: new Date(),
+    });
   };
 
   const handleCreate = async () => {
@@ -32,7 +34,6 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
     setLoading(true);
 
     try {
-      // Teamnamen prüfen
       const q = query(collection(db, 'teams'), where('name', '==', teamName.trim()));
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
@@ -42,18 +43,11 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
       }
 
       if (currentTeam) {
-        // Anstelle des window.confirm-Dialogs
         setOpenSwitchDialog(true);
         return;
       }
 
-      // Erstelle das neue Team
-      const docRef = await addDoc(collection(db, 'teams'), {
-        name: teamName.trim(),
-        adminId: user.uid,
-        members: [user.uid],
-        createdAt: new Date(),
-      });
+      const docRef = await createTeamHelper();
 
       setCurrentTeam({
         id: docRef.id,
@@ -76,16 +70,9 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
     try {
       await leaveOldTeam(user.uid, currentTeam);
 
-      // Setze das aktuelle Team zurück
       setCurrentTeam(null);
 
-      // Erstelle das neue Team
-      const docRef = await addDoc(collection(db, 'teams'), {
-        name: teamName.trim(),
-        adminId: user.uid,
-        members: [user.uid],
-        createdAt: new Date(),
-      });
+      const docRef = await createTeamHelper();
 
       setCurrentTeam({
         id: docRef.id,
@@ -126,7 +113,6 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
         </Button>
       </Box>
 
-      {/* Dialog zum Teamwechsel */}
       <Dialog open={openSwitchDialog} onClose={() => setOpenSwitchDialog(false)}>
         <DialogTitle>{t('switchTeamTitle')}</DialogTitle>
         <DialogContent>
@@ -140,31 +126,13 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
         </DialogActions>
       </Dialog>
 
-      <Backdrop
-        open={openSnackbar}
-        sx={{
-          zIndex: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)'
-        }}
-      />
-      <Snackbar
-        open={openSnackbar}
-        onClose={() => {}}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert
-          severity={snackbarSeverity}
-          variant="filled"
-          action={
-            <IconButton
-              color="inherit"
-              size="small"
-              onClick={() => setOpenSnackbar(false)}
-            >
-              <CloseIcon fontSize="inherit" />
-            </IconButton>
-          }
-        >
+      <Backdrop open={openSnackbar} sx={{ zIndex: 1, backgroundColor: 'rgba(0, 0, 0, 0.8)' }} />
+      <Snackbar open={openSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center' }} onClose={closeSnackbar}>
+        <Alert severity={snackbarSeverity} variant="filled" action={
+          <IconButton color="inherit" size="small" onClick={closeSnackbar}>
+            <CloseIcon fontSize="inherit" />
+          </IconButton>
+        }>
           {snackbarMessage}
         </Alert>
       </Snackbar>

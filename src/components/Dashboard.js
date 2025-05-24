@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AppBar,
@@ -10,8 +10,6 @@ import {
   Paper,
   Button,
   Stack,
-  useTheme,
-  useMediaQuery,
   Badge,
   Dialog,
   DialogContent,
@@ -35,16 +33,8 @@ import {
   AddCircle as CreateTeamIcon,
   Notifications as NotificationsIcon
 } from '@mui/icons-material';
-import { auth, db } from '../firebase';
+import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
-import {
-  collection,
-  addDoc,
-  query,
-  where,
-  getDocs,
-  onSnapshot,
-} from 'firebase/firestore';
 import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
 import Teams from './Teams'; 
 import CreateTeam from './CreateTeam';
@@ -52,20 +42,21 @@ import Notifications from './Notifications';
 import UserSettings from './UserSettings';
 import Statistics from './Statistics';
 import LanguageSwitcher from './LanguageSwitcher';
+import useAuth from '../hooks/useAuth';
+import useNotificationsCount from '../hooks/useNotificationsCount';
+import useStandingStats from '../hooks/useStandingStats';
+import useSessionTimer from '../hooks/useSessionTimer';
+import useResponsive from '../hooks/useResponsive';
 
 function Dashboard({ user, setUser }) {
   const { t } = useTranslation();
-  const [isStanding, setIsStanding] = useState(false);
-  const [startTime, setStartTime] = useState(null);
-  
-  const [currentSessionTime, setCurrentSessionTime] = useState(0);
-  const [dailyStandingTime, setDailyStandingTime] = useState(0);
-  const [averageStandingTime, setAverageStandingTime] = useState(0);
-  
-  const [longestSessionTime, setLongestSessionTime] = useState(0);
+  const { currentTeam, setCurrentTeam } = useAuth();
+  // Fetch standing statistics
+  const { dailyStandingTime, averageStandingTime, longestSessionTime, fetchStats } = useStandingStats(user.uid);
+  // Manage session timer and record standing sessions
+  const { isStanding, currentSessionTime, toggleStanding } = useSessionTimer(user.uid, fetchStats);
 
-  const [currentTeam, setCurrentTeam] = useState(null);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const unreadCount = useNotificationsCount(user.uid);
   const [openTeamsDialog, setOpenTeamsDialog] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [openNotificationsDialog, setOpenNotificationsDialog] = useState(false);
@@ -73,148 +64,21 @@ function Dashboard({ user, setUser }) {
   const [openStatisticsDialog, setOpenStatisticsDialog] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const theme = useTheme();
-  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  // Responsive breakpoints via custom hook
+  const { isMobile, isTablet, isLargeScreen } = useResponsive();
   const isAdmin = currentTeam?.adminId === user.uid;
 
-  const fetchCurrentTeam = useCallback(async () => {
-    try {
-      // Teams, die vom Benutzer erstellt wurden
-      const createdTeamsQuery = query(
-        collection(db, 'teams'),
-        where('adminId', '==', user.uid)
-      );
-      const createdTeamsSnapshot = await getDocs(createdTeamsQuery);
-      
-      if (!createdTeamsSnapshot.empty) {
-        const team = createdTeamsSnapshot.docs[0].data();
-        setCurrentTeam({ id: createdTeamsSnapshot.docs[0].id, ...team });
-        return;
-      }
-      
-      // Teams, denen der Benutzer beigetreten ist
-      const joinedTeamsQuery = query(
-        collection(db, 'teams'),
-        where('members', 'array-contains', user.uid)
-      );
-      const joinedTeamsSnapshot = await getDocs(joinedTeamsQuery);
-      
-      if (!joinedTeamsSnapshot.empty) {
-        const team = joinedTeamsSnapshot.docs[0].data();
-        setCurrentTeam({ id: joinedTeamsSnapshot.docs[0].id, ...team });
-        return;
-      }
-      
-      // Wenn der Benutzer in keinem Team ist
-      setCurrentTeam(null);
-    } catch (error) {
-      console.error('Fehler beim Abrufen des Teams:', error);
-    }
-  }, [user.uid]);
-  
-  useEffect(() => {
-    fetchCurrentTeam();
-  }, [fetchCurrentTeam]);
-  
-  const fetchStandingTime = useCallback(async () => {
-    const q = query(
-      collection(db, 'standingTimes'),
-      where('userId', '==', user.uid)
-    );
-    const querySnapshot = await getDocs(q);
+  // session timer handled by useSessionTimer hook
 
-    let total = 0;
-    let dailyTotal = 0;
-    let sessionCount = 0;
-    let longestSession = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const duration = data.duration; // Duration in seconds
-      const timestamp = data.startTime.toDate();
-
-      // Total standing time
-      total += duration;
-
-      // Count the session
-      sessionCount += 1;
-
-      // Check for longest session
-      if (duration > longestSession) {
-        longestSession = duration;
-      }
-
-      // Calculate daily standing time
-      if (timestamp >= today) {
-        dailyTotal += duration;
-      }
-    });
-
-    // Average standing time
-    const avgTime = sessionCount > 0 ? total / sessionCount : 0;
-
-    // Update state variables
-    setDailyStandingTime(dailyTotal);
-    setAverageStandingTime(avgTime);
-    setLongestSessionTime(longestSession);
-  }, [user.uid]);
+  // Standing stats provided by useStandingStats hook
 
   useEffect(() => {
-    let interval;
-    if (isStanding && startTime !== null) {
-      interval = setInterval(() => {
-        setCurrentSessionTime(
-          Math.floor((Date.now() - startTime) / 1000)
-        );
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isStanding, startTime]);
+    fetchStats();
+  }, [fetchStats]);
 
-  useEffect(() => {
-    fetchStandingTime();
-  }, [fetchStandingTime]);
+  // notifications count handled by useNotificationsCount hook
 
-  useEffect(() => {
-    const q = query(
-      collection(db, 'notifications'),
-      where('userId', '==', user.uid),
-      where('read', '==', false)
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setUnreadCount(snapshot.size);
-    });
-    return () => unsubscribe();
-  }, [user.uid]);
-
-  const handleStartStop = useCallback(async () => {
-    if (isStanding) {
-      // User stoppt das Stehen
-      const endTime = Date.now();
-      const duration = Math.round((endTime - startTime) / 1000);
-
-      await addDoc(collection(db, 'standingTimes'), {
-        userId: user.uid,
-        startTime: new Date(startTime), 
-        endTime: new Date(endTime), 
-        duration: duration
-      });
-
-      setIsStanding(false);
-      setStartTime(null);
-      setCurrentSessionTime(0);
-
-      await fetchStandingTime();
-    } else {
-      // User startet das Stehen
-      setIsStanding(true);
-      setStartTime(Date.now());
-    }
-  }, [isStanding, startTime, user.uid, fetchStandingTime]);
+  // toggleStanding handles start/stop, Firestore record and stats refresh
 
   const handleLogout = () => {
     signOut(auth);
@@ -471,7 +335,7 @@ function Dashboard({ user, setUser }) {
             <Button
               variant="contained"
               color={isStanding ? 'secondary' : 'primary'}
-              onClick={handleStartStop}
+              onClick={toggleStanding}
               startIcon={isStanding ? <Stop /> : <PlayArrow />}
               sx={{ mt: 2, width: '100%', maxWidth: 200 }}
             >

@@ -4,13 +4,15 @@ import { db } from '../firebase';
 import { collection, query, where, doc, getDoc, getDocs, addDoc } from 'firebase/firestore';
 import { Box, TextField, List, ListItem, Button, Typography, Backdrop, Snackbar, Alert, IconButton, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import useAuth from '../hooks/useAuth';
 
 const Teams = ({ user }) => {
   const { t } = useTranslation();
+  const { currentTeam } = useAuth();
   const [search, setSearch] = useState('');
   const [teams, setTeams] = useState([]);
   const [joinRequestsMap, setJoinRequestsMap] = useState({});
-  const [currentTeam, setCurrentTeam] = useState(null);
+  // currentTeam comes from useAuth
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
@@ -49,21 +51,8 @@ const Teams = ({ user }) => {
   }, [search, user.uid]);
 
   useEffect(() => {
-    const fetchCurrentTeam = async () => {
-      const createdTeamsQuery = query(
-        collection(db, 'teams'),
-        where('members', 'array-contains', user.uid)
-      );
-      const snapshot = await getDocs(createdTeamsQuery);
-      if (!snapshot.empty) {
-        const teamData = snapshot.docs[0].data();
-        setCurrentTeam({ id: snapshot.docs[0].id, ...teamData });
-      } else {
-        setCurrentTeam(null);
-      }
-    };
-    fetchCurrentTeam();
-  }, [user.uid]);
+    // currentTeam updates via useAuth
+  }, []);
 
   const showAlert = (message, severity) => {
     setSnackbarMessage(message);

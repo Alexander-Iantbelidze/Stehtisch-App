@@ -1,25 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from '../firebase';
-import { 
-  collection, 
-  query, 
-  where, 
-  onSnapshot, 
-  doc, 
-  updateDoc, getDoc,
-  arrayUnion,
-} from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
 import { Box, Typography, List, ListItem, Button, Backdrop, Snackbar, Alert, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { leaveOldTeam } from '../utils/teamUtils';
+import useSnackbar from '../hooks/useSnackbar';
 
 const Notifications = ({ user }) => {
   const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+  const { openSnackbar, snackbarMessage, snackbarSeverity, showAlert, closeSnackbar } = useSnackbar();
 
   useEffect(() => {
     const q = query(
@@ -36,12 +27,6 @@ const Notifications = ({ user }) => {
     });
     return () => unsubscribe();
   }, [user.uid]);
-
-  const showAlert = (message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
-  };
 
   const handleAccept = async (notif) => {
     try {
@@ -140,7 +125,7 @@ const Notifications = ({ user }) => {
       <Snackbar
         open={openSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        onClose={() => {}}
+        onClose={closeSnackbar}
       >
         <Alert
         severity={snackbarSeverity}
@@ -149,7 +134,7 @@ const Notifications = ({ user }) => {
             <IconButton
               color="inherit"
               size="small"
-              onClick={() => setOpenSnackbar(false)}
+              onClick={closeSnackbar}
             >
               <CloseIcon fontSize="inherit" />
             </IconButton>

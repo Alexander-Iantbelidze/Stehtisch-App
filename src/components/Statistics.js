@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from '../firebase';
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-} from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { getStartDate, getRanking, fetchUsernames, formatTime } from '../utils/statisticsUtils';
 import {
   Container,
   Typography,
@@ -116,152 +110,55 @@ function Statistics({ teamId }) {
 
   useEffect(() => {
     const fetchStatistics = async () => {
+      if (!teamId) return setLoading(false);
       setLoading(true);
-      if (!teamId) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        // 1. Get team members
         const teamDocRef = doc(db, 'teams', teamId);
         const teamDoc = await getDoc(teamDocRef);
-        if (!teamDoc.exists()) {
-          setLoading(false);
-          return;
-        }
+        const memberIds = teamDoc.exists() ? teamDoc.data().members || [] : [];
+        if (!memberIds.length) return setLoading(false);
 
-        const memberIds = teamDoc.data().members;
-        if (!memberIds?.length) {
-          setRankings({});
-          setLoading(false);
-          return;
-        }
+        // Fetch standingTimes
+        const timesSnapshot = await getDocs(query(
+          collection(db, 'standingTimes'), where('userId', 'in', memberIds)
+        ));
 
-        // 2. Get all standing times
-        const standingTimesQuery = query(
-          collection(db, 'standingTimes'),
-          where('userId', 'in', memberIds)
-        );
-        const standingTimesSnapshot = await getDocs(standingTimesQuery);
-
-        // 3. Filter and calculate statistics
-        const startDate = getStartDate(period);
+        // Aggregate stats
         const userStats = {};
-
-        standingTimesSnapshot.forEach((doc) => {
-          const { userId, duration, startTime } = doc.data();
-          const timestamp = startTime.toDate();
-
-          if (timestamp >= startDate) {
-            if (!userStats[userId]) {
-              userStats[userId] = {
-                totalStandingTime: 0,
-                sessionCount: 0,
-                longestSessionTime: 0,
-              };
-            }
-
-            userStats[userId].totalStandingTime += duration;
-            userStats[userId].sessionCount += 1;
-            if (duration > userStats[userId].longestSessionTime) {
-              userStats[userId].longestSessionTime = duration;
-            }
-          }
+        const startDate = getStartDate(period);
+        timesSnapshot.forEach(snap => {
+          const { userId, duration, startTime } = snap.data();
+          const ts = startTime.toDate();
+          if (ts < startDate) return;
+          if (!userStats[userId]) userStats[userId] = { totalStandingTime:0, sessionCount:0, longestSessionTime:0 };
+          userStats[userId].totalStandingTime += duration;
+          userStats[userId].sessionCount += 1;
+          userStats[userId].longestSessionTime =
+            Math.max(userStats[userId].longestSessionTime, duration);
         });
 
         // Calculate average session time
         Object.values(userStats).forEach(stats => {
-          stats.averageSessionTime = stats.sessionCount > 0 
-            ? stats.totalStandingTime / stats.sessionCount 
+          stats.averageSessionTime = stats.sessionCount > 0
+            ? stats.totalStandingTime / stats.sessionCount
             : 0;
         });
 
-        // Create rankings
-        const rankings = {
-          totalStandingTimeRanking: getRanking(userStats, 'totalStandingTime'),
-          averageSessionTimeRanking: getRanking(userStats, 'averageSessionTime'),
-          longestSessionTimeRanking: getRanking(userStats, 'longestSessionTime')
-        };
-
-        setRankings(rankings);
-
-        // Get usernames
-        const usernamesMap = await fetchUsernames(memberIds);
-        setUsernames(usernamesMap);
-        
-      } catch (error) {
-        console.error('Error fetching statistics:', error);
+        // Compute derived rankings and usernames
+        setRankings({
+          totalStandingTimeRanking: getRanking(userStats,'totalStandingTime'),
+          averageSessionTimeRanking: getRanking(userStats,'averageSessionTime'),
+          longestSessionTimeRanking: getRanking(userStats,'longestSessionTime')
+        });
+        setUsernames(await fetchUsernames(memberIds));
+      } catch (e) {
+        console.error('Error fetching statistics:', e);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-
     fetchStatistics();
   }, [period, teamId]);
-
-  const getStartDate = (period) => {
-    const now = new Date();
-    switch (period) {
-      case 'daily':
-        return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      case 'weekly':
-        const firstDayOfWeek = new Date(now);
-        firstDayOfWeek.setDate(now.getDate() - now.getDay());
-        return firstDayOfWeek;
-      case 'monthly':
-        return new Date(now.getFullYear(), now.getMonth(), 1);
-      case 'yearly':
-        return new Date(now.getFullYear(), 0, 1);
-      default:
-        return new Date(0);
-    }
-  };
-
-  const getRanking = (userStats, metric) => {
-    return Object.entries(userStats)
-      .map(([userId, stats]) => ({
-        userId,
-        value: stats[metric],
-        sessionCount: stats.sessionCount
-      }))
-      .sort((a, b) => b.value - a.value);
-  };
-
-  const fetchUsernames = async (userIds) => {
-    const usernamesMap = {};
-    const batches = [];
-
-    for (let i = 0; i < userIds.length; i += 10) {
-      const batch = userIds.slice(i, i + 10);
-      const usersQuery = query(
-        collection(db, 'users'),
-        where('__name__', 'in', batch)
-      );
-      batches.push(getDocs(usersQuery));
-    }
-
-    const results = await Promise.all(batches);
-    results.forEach(snapshot => {
-      snapshot.forEach(doc => {
-        usernamesMap[doc.id] = doc.data().username || 'Unknown User';
-      });
-    });
-
-    return usernamesMap;
-  };
-
-  const formatTime = (timeInSeconds) => {
-    const hrs = Math.floor(timeInSeconds / 3600);
-    const mins = Math.floor((timeInSeconds % 3600) / 60);
-    const secs = timeInSeconds % 60;
-    if (hrs > 0) {
-      return `${hrs}h ${mins}m ${secs}s`;
-    }
-    if (mins > 0) {
-      return `${mins}m ${secs}s`;
-    }
-    return `${secs}s`;
-  };
 
   const rows = createRowsFromRankings(rankings, usernames);
 

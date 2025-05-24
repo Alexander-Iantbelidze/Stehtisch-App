@@ -4,9 +4,10 @@ import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { setDoc, doc, query, collection, where, getDocs } from 'firebase/firestore';
 import { 
-  Container, Box, TextField, Button, Typography, Paper, Snackbar, Backdrop, Alert, IconButton
+  Container, Box, TextField, Button, Typography, Paper, Backdrop, Snackbar, Alert, IconButton
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import useSnackbar from '../hooks/useSnackbar';
 
 
 function Login() {
@@ -14,15 +15,13 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const [error, setError] = useState('');
-  const [open, setOpen] = useState(false);
   const [username, setUsername] = useState('');
+  const { openSnackbar, snackbarMessage, snackbarSeverity, showAlert, closeSnackbar } = useSnackbar();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSignUp && /@/.test(username)) {
-      setError(t('usernameNoEmail'));
-      setOpen(true);
+      showAlert(t('usernameNoEmail'), 'warning');
       return;
     }
 
@@ -36,8 +35,7 @@ function Login() {
         const usernameSnapshot = await getDocs(usernameQuery);
 
         if (!usernameSnapshot.empty) {
-          setError('Dieser Benutzername wird bereits verwendet!');
-          setOpen(true);
+          showAlert('Dieser Benutzername wird bereits verwendet!', 'error');
           return;
         }
 
@@ -69,31 +67,25 @@ function Login() {
         default:
           errorMessage = t('genericError');
       }
-      setError(errorMessage);
-      setOpen(true);
+      showAlert(errorMessage, 'error');
     }
   };
 
   const handlePasswordReset = async () => {
     if (!email) {
-      setError(t('enterEmail'));
-      setOpen(true);
+      showAlert(t('enterEmail'), 'warning');
       return;
     }
     try {
       await sendPasswordResetEmail(auth, email);
-      setError(
-        t('resetLinkSent')
-      );
-      setOpen(true);
+      showAlert(t('resetLinkSent'), 'info');
     } catch (error) {
       let errorMessage =
         t('genericError');
       if (error.code === 'auth/invalid-email') {
         errorMessage = t('resetInvalidEmail');
       } 
-      setError(errorMessage);
-      setOpen(true);
+      showAlert(errorMessage, 'error');
     }
   };
 
@@ -184,31 +176,31 @@ function Login() {
         </Paper>
       </Box>
       <Backdrop
-        open={open}
+        open={openSnackbar}
         sx={{
           zIndex: 1,
           backgroundColor: 'rgba(0, 0, 0, 0.8)'
         }}
       />
       <Snackbar
-        open={open}
+        open={openSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        onClose={() => {}}
+        onClose={closeSnackbar}
       >
         <Alert
+          severity={snackbarSeverity}
           variant="filled"
           action={
             <IconButton
               color="inherit"
               size="small"
-              onClick={() => setOpen(false)}
+              onClick={closeSnackbar}
             >
               <CloseIcon fontSize="inherit" />
             </IconButton>
           }
-          severity="error"
         >
-          {error}
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Container>

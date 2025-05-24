@@ -8,24 +8,17 @@ import { TextField, Button, Typography, Paper, Box, Backdrop, Snackbar, Alert, I
 import CloseIcon from '@mui/icons-material/Close';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { leaveOldTeam } from '../utils/teamUtils';
+import useSnackbar from '../hooks/useSnackbar';
 
 function UserSettings({ user, setUser, isModal = false, onClose }) {
   const { t } = useTranslation();
   const [newUsername, setNewUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
-
-  const showAlert = (message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
-  };
+  const { openSnackbar, snackbarMessage, snackbarSeverity, showAlert, closeSnackbar } = useSnackbar();
 
   const handleUpdateUsername = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -115,11 +108,8 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
       navigate('/');
     } catch (error) {
       console.error(error);
-      if (error.code === 'auth/invalid-credential') {
-        showAlert(t('invalidPassword'), 'error');
-      } else {
-        showAlert(t('deleteAccountError'), 'error');
-      }
+      if (error.code === 'auth/invalid-credential') showAlert(t('invalidPassword'), 'error');
+      else showAlert(t('deleteAccountError'), 'error');
     }
   };
 
@@ -228,7 +218,7 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
       <Snackbar
         open={openSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        onClose={() => {}}
+        onClose={closeSnackbar}
       >
         <Alert
         severity={snackbarSeverity}
@@ -237,7 +227,7 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
             <IconButton
               color="inherit"
               size="small"
-              onClick={() => setOpenSnackbar(false)}
+              onClick={closeSnackbar}
             >
               <CloseIcon fontSize="inherit" />
             </IconButton>

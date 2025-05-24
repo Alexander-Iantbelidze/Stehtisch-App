@@ -1,5 +1,3 @@
-import { useState, useEffect } from 'react';
-import { auth, db } from './firebase';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Teams from './components/Teams';
@@ -8,65 +6,10 @@ import Notifications from './components/Notifications';
 import Statistics from './components/Statistics';
 import UserSettings from './components/UserSettings';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import useAuth from './hooks/useAuth';
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [currentTeam, setCurrentTeam] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const username = userDoc.exists() ? userDoc.data().username : 'Unbekannter Benutzer';
-
-        setUser({
-          uid: user.uid,
-          email: user.email,
-          username: username,
-        });
-
-        // Fetch Current Team
-        try {
-          // Teams, die vom Benutzer erstellt wurden
-          const createdTeamsQuery = query(
-            collection(db, 'teams'),
-            where('adminId', '==', user.uid)
-          );
-          const createdTeamsSnapshot = await getDocs(createdTeamsQuery);
-          
-          if (!createdTeamsSnapshot.empty) {
-            const team = createdTeamsSnapshot.docs[0].data();
-            setCurrentTeam({ id: createdTeamsSnapshot.docs[0].id, ...team });
-            return;
-          }
-          
-          // Teams, denen der Benutzer beigetreten ist
-          const joinedTeamsQuery = query(
-            collection(db, 'teams'),
-            where('members', 'array-contains', user.uid)
-          );
-          const joinedTeamsSnapshot = await getDocs(joinedTeamsQuery);
-          
-          if (!joinedTeamsSnapshot.empty) {
-            const team = joinedTeamsSnapshot.docs[0].data();
-            setCurrentTeam({ id: joinedTeamsSnapshot.docs[0].id, ...team });
-            return;
-          }
-          
-          // Wenn der Benutzer in keinem Team ist
-          setCurrentTeam(null);
-        } catch (error) {
-          console.error('Fehler beim Abrufen des Teams:', error);
-          setCurrentTeam(null);
-        }
-      } else {
-        setUser(null);
-        setCurrentTeam(null);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+  const { user, currentTeam, setUser, setCurrentTeam } = useAuth();
 
   return (
     <Router>
