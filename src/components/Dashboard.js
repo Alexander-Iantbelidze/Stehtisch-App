@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AppBar,
@@ -44,15 +44,16 @@ import Statistics from './Statistics';
 import LanguageSwitcher from './LanguageSwitcher';
 import useAuth from '../hooks/useAuth';
 import useNotificationsCount from '../hooks/useNotificationsCount';
-import useStandingStats from '../hooks/useStandingStats';
 import useSessionTimer from '../hooks/useSessionTimer';
 import useResponsive from '../hooks/useResponsive';
+import useStatsOverview from '../hooks/useStatsOverview';
+import { formatTime } from '../utils/statisticsUtils';
 
 function Dashboard({ user, setUser }) {
   const { t } = useTranslation();
   const { currentTeam, setCurrentTeam } = useAuth();
-  // Fetch standing statistics
-  const { dailyStandingTime, averageStandingTime, longestSessionTime, fetchStats } = useStandingStats(user.uid);
+  // Fetch and format standing statistics overview
+  const { formattedDailyTime, formattedAverageTime, formattedLongestTime, fetchStats } = useStatsOverview(user.uid);
   // Manage session timer and record standing sessions
   const { isStanding, currentSessionTime, toggleStanding } = useSessionTimer(user.uid, fetchStats);
 
@@ -71,10 +72,6 @@ function Dashboard({ user, setUser }) {
   // session timer handled by useSessionTimer hook
 
   // Standing stats provided by useStandingStats hook
-
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
 
   // notifications count handled by useNotificationsCount hook
 
@@ -104,20 +101,6 @@ function Dashboard({ user, setUser }) {
     } else if (action === 'notifications') {
       setOpenNotificationsDialog(true);
     }
-  };
-
-  // Helper function to format time
-  const formatTime = (timeInSeconds) => {
-    const hrs = Math.floor(timeInSeconds / 3600);
-    const mins = Math.floor((timeInSeconds % 3600) / 60);
-    const secs = timeInSeconds % 60;
-    if (hrs > 0) {
-      return `${hrs}h ${mins}m ${secs}s`;
-    }
-    if (mins > 0) {
-      return `${mins}m ${secs}s`;
-    }
-    return `${secs}s`;
   };
 
   // Sidebar content
@@ -328,8 +311,7 @@ function Dashboard({ user, setUser }) {
                 />
               )}
               <Typography variant="h5" color="text.secondary">
-                {Math.floor(currentSessionTime / 60)}:
-                {(currentSessionTime % 60).toString().padStart(2, '0')}
+                {formatTime(currentSessionTime)}
               </Typography>
             </Box>
             <Button
@@ -347,13 +329,13 @@ function Dashboard({ user, setUser }) {
               <Typography variant="h6">{t('yourStatistics')}</Typography>
               <Stack spacing={1} sx={{ mt: 1 }}>
                 <Typography variant="body1">
-                  {t('dailyStandingTime')}: {formatTime(dailyStandingTime)}
+                  {t('dailyStandingTime')}: {formattedDailyTime}
                 </Typography>
                 <Typography variant="body1">
-                  {t('averageSessionTime')}: {formatTime(averageStandingTime)}
+                  {t('averageSessionTime')}: {formattedAverageTime}
                 </Typography>
                 <Typography variant="body1">
-                  {t('longestSession')}: {formatTime(longestSessionTime)}
+                  {t('longestSession')}: {formattedLongestTime}
                 </Typography>
               </Stack>
             </Box>

@@ -1,57 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Typography, Box, useTheme, useMediaQuery } from '@mui/material';
+import useDeskHeight from '../../hooks/useDeskHeight';
 import { useTranslation } from 'react-i18next';
 import './DeskHeightCalculator.css';
-import heightRangeCM from '../../utils/heightRange';
 
 const DeskHeightCalculator = () => {
   const { t } = useTranslation();
   const [height, setHeight] = useState(150);
-  const [type, setType] = useState(0); // 0 für sitting, 1 für standing
-  const [deskHeight, setDeskHeight] = useState(56.5);
-  const [sittingHeight, setSittingHeight] = useState(56.5);
-  const [standingHeight, setStandingHeight] = useState(93.5);
+  const [type, setType] = useState(0); // 0 sitting, 1 standing
 
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
-  const showDeskHeight = useCallback((person_height, type) => {
-    const heightRange = heightRangeCM.find(sub => sub[0] === person_height);
-    
-    if (!heightRange) {
-      return; // Wenn kein passender Wert gefunden wurde, machen wir nichts
-    }
-
-    const minHeight = 56.5;
-    const maxHeight = type === 1 ? heightRange[2] : heightRange[1];
-    
-    let diffHeight = maxHeight * 349 / minHeight - 349;
-    let scale = ((maxHeight * 349 / minHeight) * 100 / 349) / 100;
-    
-    setDeskHeight(maxHeight);
-    
-    // Nur DOM manipulieren wenn Large Screen
-    if (isLargeScreen) {
-      const legs = document.getElementById("desk__legs");
-      const deskTop = document.getElementById("desk__top");
-      const indicatorBox = document.getElementById("indicator__box");
-      if (legs) legs.style.transform = `scaleY(${scale})`;
-      if (deskTop) deskTop.style.marginTop = `-${diffHeight}px`;
-      if (indicatorBox) indicatorBox.style.height = `${scale * 100}%`;
-    }
-  }, [isLargeScreen]);
-
-  useEffect(() => {
-    const heightRange = heightRangeCM.find(sub => sub[0] === height);
-    
-    if (heightRange) {
-      setSittingHeight(heightRange[1]);
-      setStandingHeight(heightRange[2]);
-      showDeskHeight(height, type);
-    }
-  }, [height, type, showDeskHeight]);
-
-  
+  // Compute desk, sitting, and standing heights and update preview via hook
+  const { deskHeight, sittingHeight, standingHeight } = useDeskHeight(height, type, isLargeScreen);
 
   const handleHeightChange = (e) => {
     setHeight(parseInt(e.target.value));
