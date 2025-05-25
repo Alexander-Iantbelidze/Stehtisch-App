@@ -3,12 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { setDoc, doc, query, collection, where, getDocs } from 'firebase/firestore';
-import { 
-  Container, Box, TextField, Button, Typography, Paper, Backdrop, Snackbar, Alert, IconButton
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Container, Box, TextField, Button, Typography, Paper } from '@mui/material';
+import SnackbarAlert from './SnackbarAlert';
 import useSnackbar from '../hooks/useSnackbar';
-
 
 function Login() {
   const { t } = useTranslation();
@@ -88,8 +85,6 @@ function Login() {
       showAlert(errorMessage, 'error');
     }
   };
-
-  
 
   return (
     <Container component="main" maxWidth="xs">
@@ -175,34 +170,12 @@ function Login() {
           </Box>
         </Paper>
       </Box>
-      <Backdrop
+      <SnackbarAlert
         open={openSnackbar}
-        sx={{
-          zIndex: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)'
-        }}
-      />
-      <Snackbar
-        open={openSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
         onClose={closeSnackbar}
-      >
-        <Alert
-          severity={snackbarSeverity}
-          variant="filled"
-          action={
-            <IconButton
-              color="inherit"
-              size="small"
-              onClick={closeSnackbar}
-            >
-              <CloseIcon fontSize="inherit" />
-            </IconButton>
-          }
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+      />
     </Container>
   );
 }

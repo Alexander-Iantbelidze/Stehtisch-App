@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { doc, updateDoc, deleteDoc, collection, query, where, getDocs, getDoc } from 'firebase/firestore';
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { TextField, Button, Typography, Paper, Box, Backdrop, Snackbar, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Divider } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { TextField, Button, Typography, Paper, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Divider, IconButton } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { leaveOldTeam } from '../utils/teamUtils';
 import useSnackbar from '../hooks/useSnackbar';
+import SnackbarAlert from './SnackbarAlert';
 
 function UserSettings({ user, setUser, isModal = false, onClose }) {
   const { t } = useTranslation();
@@ -208,34 +208,12 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
         </DialogActions>
       </Dialog>
 
-      <Backdrop
+      <SnackbarAlert
         open={openSnackbar}
-        sx={{
-          zIndex: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)'
-        }}
-      />
-      <Snackbar
-        open={openSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        onClose={closeSnackbar}
-      >
-        <Alert
+        message={snackbarMessage}
         severity={snackbarSeverity}
-          variant="filled"
-          action={
-            <IconButton
-              color="inherit"
-              size="small"
-              onClick={closeSnackbar}
-            >
-              <CloseIcon fontSize="inherit" />
-            </IconButton>
-          }
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+        onClose={closeSnackbar}
+      />
     </>
   );
 }

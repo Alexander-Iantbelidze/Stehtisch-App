@@ -1,96 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { db } from '../firebase';
-import { collection, query, where, doc, getDoc, getDocs, addDoc } from 'firebase/firestore';
-import { Box, TextField, List, ListItem, Button, Typography, Backdrop, Snackbar, Alert, IconButton, Tooltip } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Box, TextField, List, ListItem, Button, Typography, Tooltip } from '@mui/material';
 import useAuth from '../hooks/useAuth';
+import useSnackbar from '../hooks/useSnackbar';
+import useTeams from '../hooks/useTeams';
+import SnackbarAlert from './SnackbarAlert';
 
 const Teams = ({ user }) => {
   const { t } = useTranslation();
   const { currentTeam } = useAuth();
-  const [search, setSearch] = useState('');
-  const [teams, setTeams] = useState([]);
-  const [joinRequestsMap, setJoinRequestsMap] = useState({});
-  // currentTeam comes from useAuth
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-
-  useEffect(() => {
-    const fetchJoinRequests = async () => {
-      const q = query(collection(db, 'joinRequests'), where('userId', '==', user.uid));
-      const snapshot = await getDocs(q);
-      const tempMap = {};
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        tempMap[data.teamId] = data.status;
-      });
-      setJoinRequestsMap(tempMap);
-    };
-    fetchJoinRequests();
-  }, [user.uid]);
-
-  useEffect(() => {
-    const fetchTeams = async () => {
-      const q = query(collection(db, 'teams'), where('name', '>=', search), where('name', '<=', search + '\uf8ff'));
-      const querySnapshot = await getDocs(q);
-      const teamList = [];
-      querySnapshot.forEach((doc) => {
-        if (doc.id !== user.uid) {
-          teamList.push({ id: doc.id, ...doc.data() });
-        }
-      });
-      setTeams(teamList);
-    };
-    if (search) {
-      fetchTeams();
-    } else {
-      setTeams([]);
-    }
-  }, [search, user.uid]);
-
-  useEffect(() => {
-    // currentTeam updates via useAuth
-  }, []);
-
-  const showAlert = (message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
-  };
-
-  const handleJoin = async (teamId) => {
-    try {
-      const joinRequestRef = await addDoc(collection(db, 'joinRequests'), {
-        teamId,
-        userId: user.uid,
-        status: 'pending',
-        requestedAt: new Date(),
-      });
-  
-      const teamDocRef = doc(db, 'teams', teamId);
-      const teamDoc = await getDoc(teamDocRef);
-      const teamData = teamDoc.data();
-      const teamAdminId = teamData.adminId;
-  
-      await addDoc(collection(db, 'notifications'), {
-        userId: teamAdminId,
-        senderId: user.uid,
-        message: `${user.username} möchte Ihrem Team beitreten.`,
-        read: false,
-        joinRequestId: joinRequestRef.id,
-        teamId: teamId,
-        createdAt: new Date(),
-      });
-  
-      setJoinRequestsMap((prev) => ({ ...prev, [teamId]: 'pending' }));
-  
-      showAlert('Beitrittsanfrage gesendet!', 'info');
-    } catch (error) {
-      showAlert('Fehler beim Senden der Beitrittsanfrage. Bitte versuchen Sie es erneut.', 'error');
-    }
-  };
+  const [search, setSearch] = React.useState('');
+  const { openSnackbar, snackbarMessage, snackbarSeverity, closeSnackbar } = useSnackbar();
+  const { teams, joinRequestsMap, handleJoin } = useTeams(search, user);
 
   return (
     <Box>
@@ -142,34 +63,12 @@ const Teams = ({ user }) => {
           );
         })}
       </List>
-      <Backdrop
+      <SnackbarAlert
         open={openSnackbar}
-        sx={{
-          zIndex: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)'
-        }}
-      />
-      <Snackbar
-        open={openSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        onClose={() => {}}
-      >
-        <Alert
+        message={snackbarMessage}
         severity={snackbarSeverity}
-          variant="filled"
-          action={
-            <IconButton
-              color="inherit"
-              size="small"
-              onClick={() => setOpenSnackbar(false)}
-            >
-              <CloseIcon fontSize="inherit" />
-            </IconButton>
-          }
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+        onClose={closeSnackbar}
+      />
     </Box>
   );
 };

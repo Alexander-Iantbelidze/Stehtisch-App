@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
-import { Box, Typography, List, ListItem, Button, Backdrop, Snackbar, Alert, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Box, Typography, List, ListItem, Button } from '@mui/material';
 import { leaveOldTeam } from '../utils/teamUtils';
 import useSnackbar from '../hooks/useSnackbar';
+import SnackbarAlert from './SnackbarAlert';
 
 const Notifications = ({ user }) => {
   const { t } = useTranslation();
@@ -115,34 +115,12 @@ const Notifications = ({ user }) => {
           ))}
         </List>
       )}
-      <Backdrop
+      <SnackbarAlert
         open={openSnackbar}
-        sx={{
-          zIndex: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)'
-        }}
-      />
-      <Snackbar
-        open={openSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        onClose={closeSnackbar}
-      >
-        <Alert
+        message={snackbarMessage}
         severity={snackbarSeverity}
-          variant="filled"
-          action={
-            <IconButton
-              color="inherit"
-              size="small"
-              onClick={closeSnackbar}
-            >
-              <CloseIcon fontSize="inherit" />
-            </IconButton>
-          }
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+        onClose={closeSnackbar}
+      />
     </Box>
   );
 };

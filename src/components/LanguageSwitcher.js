@@ -1,17 +1,13 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Select, MenuItem } from '@mui/material';
+import useLanguage from '../hooks/useLanguage';
 
 function LanguageSwitcher() {
-  const { i18n } = useTranslation();
-  const changeLanguage = (lng) => {
-    localStorage.setItem('language', lng);
-    i18n.changeLanguage(lng);
-  };
+  const { language, changeLanguage } = useLanguage();
 
   return (
     <Select
-      value={i18n.language}
+      value={language}
       onChange={(e) => changeLanguage(e.target.value)}
       size="small"
       variant="standard"
