@@ -1,9 +1,23 @@
 import React from 'react';
-import { Paper, Typography, Box, Button } from '@mui/material';
+import { Paper, Typography, Box, Button, styled } from '@mui/material';
 import { PlayArrow, Stop } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { formatTime } from '../utils/statisticsUtils';
 import StatsOverview from './StatsOverview';
+
+// Styled component for the ripple effect
+const Ripple = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  borderRadius: '50%',
+  animation: 'ripple 1.5s infinite ease-in-out',
+  border: `2px solid ${theme.palette.primary.main}`,
+  '@keyframes ripple': {
+    '0%': { transform: 'scale(1)', opacity: 0.5 },
+    '100%': { transform: 'scale(1.5)', opacity: 0 },
+  },
+}));
 
 function TimerPanel({ user, isStanding, currentSessionTime, toggleStanding, isLargeScreen,
   formattedDailyTime, formattedAverageTime, formattedLongestTime }) {
@@ -18,11 +32,8 @@ function TimerPanel({ user, isStanding, currentSessionTime, toggleStanding, isLa
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 3,  
-        maxHeight: {
-          lg: 650,
-          xl: 'none',
-        },
+        gap: 4,
+        maxHeight: { lg: 650, xl: 'none' },
         overflow: 'hidden',
       }}
     >
@@ -43,22 +54,7 @@ function TimerPanel({ user, isStanding, currentSessionTime, toggleStanding, isLa
           overflow: 'visible',
         }}
       >
-        {isStanding && (
-          <Box
-            sx={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              borderRadius: '50%',
-              animation: 'ripple 1.5s infinite ease-in-out',
-              border: (theme) => `2px solid ${theme.palette.primary.main}`,
-              '@keyframes ripple': {
-                '0%': { transform: 'scale(1)', opacity: 0.5 },
-                '100%': { transform: 'scale(1.5)', opacity: 0 },
-              },
-            }}
-          />
-        )}
+        {isStanding && <Ripple />}
         <Typography variant="h5" color="text.secondary">
           {formatTime(currentSessionTime)}
         </Typography>
