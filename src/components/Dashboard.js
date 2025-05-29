@@ -7,34 +7,18 @@ import {
   IconButton,
   Container,
   Box,
-  Paper,
   Button,
   Stack,
   Badge,
   DialogContent,
   DialogActions,
   Tooltip,
-  Drawer,
-  List,
-  ListItemIcon,
-  ListItemText,
-  ListItemButton
+  Drawer
 } from '@mui/material';
-import {
-  PlayArrow,
-  Stop,
-  ExitToApp,
-  Settings,
-  Menu as MenuIcon,
-  BarChart as StatisticsIcon,
-  GroupAdd as JoinTeamIcon,
-  AddCircle as CreateTeamIcon,
-  Notifications as NotificationsIcon
-} from '@mui/icons-material';
+import { ExitToApp, Settings, Menu as MenuIcon } from '@mui/icons-material';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
-import DeskHeightCalculator from './DeskHeightCalculator/DeskHeightCalculator';
-import Teams from './Teams'; 
+import Teams from './Teams';
 import CreateTeam from './CreateTeam';
 import Notifications from './Notifications';
 import UserSettings from './UserSettings';
@@ -46,7 +30,9 @@ import useNotificationsCount from '../hooks/useNotificationsCount';
 import useSessionTimer from '../hooks/useSessionTimer';
 import useResponsive from '../hooks/useResponsive';
 import useStatsOverview from '../hooks/useStatsOverview';
-import { formatTime } from '../utils/statisticsUtils';
+import DeskCalculatorPanel from './DeskCalculatorPanel';
+import NavigationDrawer from './NavigationDrawer';
+import TimerPanel from './TimerPanel';
 
 function Dashboard({ user, setUser }) {
   const { t } = useTranslation();
@@ -67,14 +53,6 @@ function Dashboard({ user, setUser }) {
   // Responsive breakpoints via custom hook
   const { isMobile, isTablet, isLargeScreen } = useResponsive();
   const isAdmin = currentTeam?.adminId === user.uid;
-
-  // session timer handled by useSessionTimer hook
-
-  // Standing stats provided by useStandingStats hook
-
-  // notifications count handled by useNotificationsCount hook
-
-  // toggleStanding handles start/stop, Firestore record and stats refresh
 
   const handleLogout = () => {
     signOut(auth);
@@ -101,48 +79,6 @@ function Dashboard({ user, setUser }) {
       setOpenNotificationsDialog(true);
     }
   };
-
-  // Sidebar content
-  const drawerContent = (
-    <Box sx={{ width: 250 }} role="presentation">
-      <List sx={{ p: 0, '& .MuiListItemButton-root': { px: 2 }, '& .MuiListItemIcon-root': { minWidth: 0, mr: 2 }, '& .MuiListItemText-root': { mr: 2, whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' } }}>
-        <ListItemButton
-          onClick={() => handleMenuItemClick('statistics')}
-          disabled={!currentTeam}
-        >
-          <ListItemIcon>
-            <StatisticsIcon color={currentTeam ? "primary" : "disabled"} />
-          </ListItemIcon>
-          <ListItemText primary={t('teamStatistics')} />
-        </ListItemButton>
-        
-        <ListItemButton onClick={() => handleMenuItemClick('joinTeam')}>
-          <ListItemIcon>
-            <JoinTeamIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText primary={t('joinTeam')} />
-        </ListItemButton>
-        
-        <ListItemButton onClick={() => handleMenuItemClick('createTeam')}>
-          <ListItemIcon>
-            <CreateTeamIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText primary={t('createTeam')} />
-        </ListItemButton>
-        
-        {isAdmin && (
-          <ListItemButton onClick={() => handleMenuItemClick('notifications')}>
-            <ListItemIcon>
-              <Badge badgeContent={unreadCount} color="error">
-                <NotificationsIcon color="primary" />
-              </Badge>
-            </ListItemIcon>
-            <ListItemText primary={t('myNotifications')} />
-          </ListItemButton>
-        )}
-      </List>
-    </Box>
-  );
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
@@ -235,12 +171,8 @@ function Dashboard({ user, setUser }) {
       </AppBar>
       
       {/* Responsive Drawer/Sidebar */}
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={toggleDrawer}
-      >
-        {drawerContent}
+      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
+        <NavigationDrawer currentTeam={currentTeam} unreadCount={unreadCount} onMenuClick={handleMenuItemClick} />
       </Drawer>
 
       <Container
@@ -253,110 +185,20 @@ function Dashboard({ user, setUser }) {
           overflow: 'auto',
         }}
       >
-        <Stack
-          spacing={3}
-          direction={{ xs: 'column', md: 'row' }}
-          sx={{ flexGrow: 1 }}
-          justifyContent="space-between"
-        >
-          {/* Timer Component */}
-          <Paper
-            elevation={3}
-            sx={{
-              p: 3,
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              maxHeight: {
-                lg: 650,
-                xl: 'none',
-              },
-              overflow: 'hidden',
-            }}
-          >
-            <Typography variant="h4" gutterBottom>
-              {t('welcome', { username: user.username })}
-            </Typography>
-            
-            <Box
-              sx={{
-                position: 'relative',
-                width: isLargeScreen ? 200 : 150,
-                height: isLargeScreen ? 200 : 150,
-                borderRadius: '50%',
-                border: (theme) => `2px solid ${theme.palette.primary.main}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'transparent',
-                overflow: 'visible'
-              }}
-            >
-              {isStanding && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: '50%',
-                    animation: 'ripple 1.5s infinite ease-in-out',
-                    border: (theme) => `2px solid ${theme.palette.primary.main}`,
-                    '@keyframes ripple': {
-                      '0%': { transform: 'scale(1)', opacity: 0.5 },
-                      '100%': { transform: 'scale(1.5)', opacity: 0 }
-                    }
-                  }}
-                />
-              )}
-              <Typography variant="h5" color="text.secondary">
-                {formatTime(currentSessionTime)}
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              color={isStanding ? 'secondary' : 'primary'}
-              onClick={toggleStanding}
-              startIcon={isStanding ? <Stop /> : <PlayArrow />}
-              sx={{ mt: 2, width: '100%', maxWidth: 200 }}
-            >
-              {isStanding ? t('stopStanding') : t('startStanding')}
-            </Button>
-
-            {/* Statistics Overview */}
-            <Box sx={{ mt: 4, width: '100%' }}>
-              <Typography variant="h6">{t('yourStatistics')}</Typography>
-              <Stack spacing={1} sx={{ mt: 1 }}>
-                <Typography variant="body1">
-                  {t('dailyStandingTime')}: {formattedDailyTime}
-                </Typography>
-                <Typography variant="body1">
-                  {t('averageSessionTime')}: {formattedAverageTime}
-                </Typography>
-                <Typography variant="body1">
-                  {t('longestSession')}: {formattedLongestTime}
-                </Typography>
-              </Stack>
-            </Box>
-          </Paper>
-
-          {/* Desk Height Calculator */}
-          <Paper
-            elevation={3}
-            sx={{
-              p: 3,
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              maxHeight: {
-                lg: 650,
-                xl: 'none',
-              },
-              overflow: 'hidden',
-            }}
-          >
-            <DeskHeightCalculator />
-          </Paper>
+        <Stack spacing={3} direction={{ xs: 'column', md: 'row' }} sx={{ flexGrow: 1 }} justifyContent="space-between">
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <TimerPanel
+              user={user}
+              isStanding={isStanding}
+              currentSessionTime={currentSessionTime}
+              toggleStanding={toggleStanding}
+              isLargeScreen={isLargeScreen}
+              formattedDailyTime={formattedDailyTime}
+              formattedAverageTime={formattedAverageTime}
+              formattedLongestTime={formattedLongestTime}
+            />
+          </Box>
+          <DeskCalculatorPanel />
         </Stack>
       </Container>
 
