@@ -11,11 +11,9 @@ import {
   Button,
   Stack,
   Badge,
-  Dialog,
   DialogContent,
   DialogActions,
   Tooltip,
-  Grow,
   Drawer,
   List,
   ListItemIcon,
@@ -41,6 +39,7 @@ import CreateTeam from './CreateTeam';
 import Notifications from './Notifications';
 import UserSettings from './UserSettings';
 import Statistics from './Statistics';
+import ResponsiveDialog from './ResponsiveDialog';
 import LanguageSwitcher from './LanguageSwitcher';
 import useAuth from '../hooks/useAuth';
 import useNotificationsCount from '../hooks/useNotificationsCount';
@@ -361,161 +360,52 @@ function Dashboard({ user, setUser }) {
         </Stack>
       </Container>
 
-      {/* Responsive Dialogs */}
-      <Dialog 
-        open={openTeamsDialog} 
-        onClose={() => setOpenTeamsDialog(false)}
-        fullScreen={isMobile}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            m: isMobile ? 0 : 2,
-            borderRadius: isMobile ? 0 : 2,
-            height: isMobile ? '100%' : 'auto',
-            maxHeight: isMobile ? '100%' : '90vh',
-          }
-        }}
-      >
-        <DialogContent sx={{ 
-          p: { xs: 2, sm: 3 },
-          height: isMobile ? 'calc(100vh - 64px)' : 'auto', 
-          overflow: 'auto'
-        }}>
+      {/* Teams dialog */}
+      <ResponsiveDialog open={openTeamsDialog} onClose={() => setOpenTeamsDialog(false)} maxWidth="sm">
+        <DialogContent sx={{ p: { xs: 2, sm: 3 }, height: isMobile ? 'calc(100vh - 64px)' : 'auto', overflow: 'auto' }}>
           <Teams user={user} />
         </DialogContent>
         <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
           <Button onClick={() => setOpenTeamsDialog(false)}>{t('close')}</Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
 
-      <Dialog 
-        open={openCreateDialog} 
-        onClose={() => setOpenCreateDialog(false)}
-        fullScreen={isMobile}
-        maxWidth="sm" 
-        fullWidth
-        PaperProps={{
-          sx: {
-            m: isMobile ? 0 : 2,
-            borderRadius: isMobile ? 0 : 2,
-            height: isMobile ? '100%' : 'auto',
-            maxHeight: isMobile ? '100%' : '90vh',
-          }
-        }}
-      >
-        <DialogContent sx={{ 
-          p: { xs: 2, sm: 3 },
-          height: isMobile ? 'calc(100vh - 64px)' : 'auto',
-          overflow: 'auto'
-        }}>
+      {/* CreateTeam dialog */}
+      <ResponsiveDialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm">
+        <DialogContent sx={{ p: { xs: 2, sm: 3 }, height: isMobile ? 'calc(100vh - 64px)' : 'auto', overflow: 'auto' }}>
           <CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />
         </DialogContent>
         <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
           <Button onClick={() => setOpenCreateDialog(false)}>{t('close')}</Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
 
-      <Dialog 
-        open={openNotificationsDialog} 
-        onClose={() => setOpenNotificationsDialog(false)}
-        fullScreen={isMobile}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            m: isMobile ? 0 : 2,
-            borderRadius: isMobile ? 0 : 2,
-            height: isMobile ? '100%' : 'auto',
-            maxHeight: isMobile ? '100%' : '90vh',
-          }
-        }}
-      >
-        <DialogContent sx={{ 
-          p: { xs: 2, sm: 3 },
-          height: isMobile ? 'calc(100vh - 64px)' : 'auto',
-          overflow: 'auto'
-        }}>
+      {/* Notifications dialog */}
+      <ResponsiveDialog open={openNotificationsDialog} onClose={() => setOpenNotificationsDialog(false)} maxWidth="sm">
+        <DialogContent sx={{ p: { xs: 2, sm: 3 }, height: isMobile ? 'calc(100vh - 64px)' : 'auto', overflow: 'auto' }}>
           <Notifications user={user} />
         </DialogContent>
         <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
           <Button onClick={() => setOpenNotificationsDialog(false)}>{t('close')}</Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
 
-      <Dialog 
-        open={openSettingsModal} 
-        onClose={() => setOpenSettingsModal(false)}
-        TransitionComponent={Grow}
-        TransitionProps={{ timeout: 350, style: { transformOrigin: 'top right' } }}
-        fullScreen={isMobile}
-        PaperProps={{
-          sx: {
-            borderRadius: isMobile ? 0 : '16px',
-            position: 'relative',
-            overflow: 'visible',
-            width: isMobile ? '100%' : '500px',
-            maxWidth: isMobile ? '100%' : '500px',
-            height: isMobile ? '100%' : 'auto',
-            margin: isMobile ? 0 : undefined,
-            '&::before': isMobile ? {} : {
-              content: '""',
-              position: 'absolute',
-              top: '-12px',
-              right: '30px',
-              width: '24px',
-              height: '24px',
-              backgroundColor: 'background.paper',
-              transform: 'rotate(45deg)',
-              zIndex: -1,
-            }
-          }
-        }}
-        sx={{
-          '& .MuiDialog-container': {
-            justifyContent: isMobile ? 'center' : 'flex-end', 
-            alignItems: isMobile ? 'center' : 'flex-start',
-            paddingTop: isMobile ? 0 : '64px',
-            paddingRight: isMobile ? 0 : '16px'
-          }
-        }}
-      >
+      {/* Settings modal */}
+      <ResponsiveDialog open={openSettingsModal} onClose={() => setOpenSettingsModal(false)} maxWidth="sm">
         <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
-          <UserSettings 
-            user={user} 
-            setUser={setUser} 
-            isModal={true} 
-            onClose={() => setOpenSettingsModal(false)} 
-          />
+          <UserSettings user={user} setUser={setUser} isModal onClose={() => setOpenSettingsModal(false)} />
         </DialogContent>
-      </Dialog>
+      </ResponsiveDialog>
 
-      <Dialog 
-        open={openStatisticsDialog} 
-        onClose={() => setOpenStatisticsDialog(false)}
-        fullScreen={isMobile}
-        maxWidth="xl"
-        fullWidth
-        PaperProps={{
-          sx: {
-            m: isMobile ? 0 : 2,
-            borderRadius: isMobile ? 0 : 2,
-            height: isMobile ? '100%' : 'auto',
-            maxHeight: isMobile ? '100%' : '90vh'
-          }
-        }}
-      >
-        <DialogContent sx={{ 
-          p: { xs: 1, sm: 2, md: 3 },
-          height: isMobile ? 'calc(100vh - 64px)' : 'auto',
-          overflow: 'auto'
-        }}>
+      {/* Statistics dialog */}
+      <ResponsiveDialog open={openStatisticsDialog} onClose={() => setOpenStatisticsDialog(false)} maxWidth="xl">
+        <DialogContent sx={{ p: { xs: 1, sm: 2, md: 3 }, height: isMobile ? 'calc(100vh - 64px)' : 'auto', overflow: 'auto' }}>
           <Statistics user={user} teamId={currentTeam?.id} />
         </DialogContent>
         <DialogActions sx={{ p: { xs: 1, sm: 2 }, pt: 0 }}>
           <Button onClick={() => setOpenStatisticsDialog(false)}>{t('close')}</Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
     </Box>
   );
 }
