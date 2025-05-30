@@ -2,7 +2,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Teams from './components/Teams';
 import CreateTeam from './components/CreateTeam';
-import Notifications from './components/Notifications';
+import Notifications from './components/Notifications/Notifications';
 import Statistics from './components/Statistics';
 import UserSettings from './components/UserSettings';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';

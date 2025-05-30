@@ -1,9 +1,11 @@
-import React from 'react';
-import { Box, TextField, Button, Typography } from '@mui/material';
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Typography, TextField, Dialog, DialogTitle } from '@mui/material';
+import useCreateTeam from '../../hooks/useCreateTeam';
+import SnackbarAlert from '../SnackbarAlert';
+import {
+  Container,
+  StyledButton
+} from './CreateTeam.styles';
 import { useTranslation } from 'react-i18next';
-import useCreateTeam from '../hooks/useCreateTeam';
-import SnackbarAlert from './SnackbarAlert';
 
 const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
   const { t } = useTranslation();
@@ -22,8 +24,8 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
   } = useCreateTeam(user, currentTeam, setCurrentTeam);
 
   return (
-    <>
-      <Box>
+    <>  
+      <Container>
         <Typography variant="h4">{t('createNewTeam')}</Typography>
         <TextField
           label={t('teamNameLabel')}
@@ -32,29 +34,22 @@ const CreateTeam = ({ user, currentTeam, setCurrentTeam }) => {
           fullWidth
           margin="normal"
         />
-        <Button
+        <StyledButton
           variant="contained"
           color="primary"
           onClick={handleCreate}
           disabled={loading}
         >
           {loading ? t('creatingTeam') : t('createTeam')}
-        </Button>
-      </Box>
+        </StyledButton>
+      </Container>
 
       <Dialog open={openSwitchDialog} onClose={() => setOpenSwitchDialog(false)}>
         <DialogTitle>{t('switchTeamTitle')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t('switchTeamMessage', { currentTeam: currentTeam?.name })}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenSwitchDialog(false)}>{t('cancel')}</Button>
-          <Button onClick={confirmSwitchTeam} autoFocus>{t('confirm')}</Button>
-        </DialogActions>
+          <Typography>{t('switchTeamMessage', { currentTeam: currentTeam?.name })}</Typography>
+          <StyledButton onClick={() => setOpenSwitchDialog(false)}>{t('cancel')}</StyledButton>
+          <StyledButton onClick={confirmSwitchTeam} autoFocus>{t('confirm')}</StyledButton>
       </Dialog>
-
       <SnackbarAlert
         open={openSnackbar}
         message={snackbarMessage}

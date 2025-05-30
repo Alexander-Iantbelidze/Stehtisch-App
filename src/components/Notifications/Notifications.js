@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { db } from '../firebase';
+import { db } from '../../firebase';
 import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
-import { Box, Typography, List, ListItem, Button } from '@mui/material';
-import { leaveOldTeam } from '../utils/teamUtils';
-import useSnackbar from '../hooks/useSnackbar';
-import SnackbarAlert from './SnackbarAlert';
+import { Typography, Button } from '@mui/material';
+import {
+  Container,
+  StyledList,
+  StyledListItem,
+  Message,
+  Actions
+} from './Notifications.styles';
+import { leaveOldTeam } from '../../utils/teamUtils';
+import useSnackbar from '../../hooks/useSnackbar';
+import SnackbarAlert from '../SnackbarAlert';
 
 const Notifications = ({ user }) => {
   const { t } = useTranslation();
@@ -78,24 +85,18 @@ const Notifications = ({ user }) => {
     }
   };
 
- 
-
   return (
-    <Box sx={{ padding: 3 }}>
+    <Container>
       {notifications.length === 0 ? (
         <Typography variant="h5">{t('noNotifications')}</Typography>
       ) : (
-        <List>
+        <StyledList>
           {notifications.map((notif) => (
-            <ListItem 
-              key={notif.id} 
-              divider 
-              sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
-            >
-              <Typography variant="body1" sx={{ mb: 1 }}>
+            <StyledListItem key={notif.id} divider>
+              <Message variant="body1">
                 {notif.message}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              </Message>
+              <Actions>
                 <Button
                   variant="contained"
                   color="success"
@@ -110,10 +111,10 @@ const Notifications = ({ user }) => {
                 >
                   {t('reject')}
                 </Button>
-              </Box>
-            </ListItem>
+              </Actions>
+            </StyledListItem>
           ))}
-        </List>
+        </StyledList>
       )}
       <SnackbarAlert
         open={openSnackbar}
@@ -121,7 +122,7 @@ const Notifications = ({ user }) => {
         severity={snackbarSeverity}
         onClose={closeSnackbar}
       />
-    </Box>
+    </Container>
   );
 };
 

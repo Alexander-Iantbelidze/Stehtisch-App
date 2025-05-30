@@ -1,6 +1,6 @@
 import React from 'react';
-import { Dialog } from '@mui/material';
-import useResponsive from '../hooks/useResponsive';
+import { StyledDialog } from './ResponsiveDialog.styles';
+import useResponsive from '../../hooks/useResponsive';
 
 /**
  * Reusable dialog that is responsive: full screen on mobile, with consistent PaperProps.
@@ -14,23 +14,16 @@ function ResponsiveDialog({ open, onClose, maxWidth = 'sm', children }) {
   const { isMobile } = useResponsive();
 
   return (
-    <Dialog
+    <StyledDialog
       open={open}
       onClose={onClose}
       fullScreen={isMobile}
       maxWidth={maxWidth}
       fullWidth
-      PaperProps={{
-        sx: {
-          m: isMobile ? 0 : 2,
-          borderRadius: isMobile ? 0 : 2,
-          height: isMobile ? '100%' : 'auto',
-          maxHeight: isMobile ? '100%' : '90vh',
-        },
-      }}
+      isMobile={isMobile}
     >
       {children}
-    </Dialog>
+    </StyledDialog>
   );
 }
 
