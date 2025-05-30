@@ -1,5 +1,5 @@
 import Login from './components/Login';
-import Dashboard from './components/Dashboard';
+import Dashboard from './components/Dashboard/Dashboard';
 import Teams from './components/Teams';
 import CreateTeam from './components/CreateTeam';
 import Notifications from './components/Notifications/Notifications';

@@ -2,37 +2,45 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Container,
-  Box,
   Button,
-  Stack,
   Badge,
   DialogContent,
   DialogActions,
   Tooltip,
-  Drawer
+  Drawer,
+  IconButton
 } from '@mui/material';
 import { ExitToApp, Settings, Menu as MenuIcon } from '@mui/icons-material';
-import { auth } from '../firebase';
+import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
-import Teams from './Teams';
-import CreateTeam from './CreateTeam';
-import Notifications from './Notifications/Notifications';
-import UserSettings from './UserSettings';
-import Statistics from './Statistics';
-import ResponsiveDialog from './ResponsiveDialog/ResponsiveDialog';
-import LanguageSwitcher from './LanguageSwitcher';
-import useAuth from '../hooks/useAuth';
-import useNotificationsCount from '../hooks/useNotificationsCount';
-import useSessionTimer from '../hooks/useSessionTimer';
-import useResponsive from '../hooks/useResponsive';
-import useStatsOverview from '../hooks/useStatsOverview';
-import DeskCalculatorPanel from './DeskCalculatorPanel';
-import NavigationDrawer from './NavigationDrawer';
-import TimerPanel from './TimerPanel';
+import Teams from '../Teams';
+import CreateTeam from '../CreateTeam';
+import Notifications from '../Notifications/Notifications';
+import UserSettings from '../UserSettings';
+import Statistics from '../Statistics';
+import ResponsiveDialog from '../ResponsiveDialog/ResponsiveDialog';
+import LanguageSwitcher from '../LanguageSwitcher';
+import useAuth from '../../hooks/useAuth';
+import useNotificationsCount from '../../hooks/useNotificationsCount';
+import useSessionTimer from '../../hooks/useSessionTimer';
+import useResponsive from '../../hooks/useResponsive';
+import useStatsOverview from '../../hooks/useStatsOverview';
+import DeskCalculatorPanel from '../DeskCalculatorPanel/DeskCalculatorPanel';
+import NavigationDrawer from '../NavigationDrawer';
+import TimerPanel from '../TimerPanel';
+import {
+  Root,
+  Header,
+  LeftSection,
+  RightSection,
+  MenuButton,
+  SettingsButton,
+  Main,
+  Content,
+  Column,
+  Title,
+  DesktopMenu
+} from './Dashboard.styles';
 
 function Dashboard({ user, setUser }) {
   const { t } = useTranslation();
@@ -81,39 +89,28 @@ function Dashboard({ user, setUser }) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+    <Root>
       <AppBar position="static">
-        <Toolbar sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between'
-        }}>
+        <Header>
           {/* Left section */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {(isTablet || isMobile) && ( 
-            <IconButton
+          <LeftSection>
+          {(isTablet || isMobile) && (
+            <MenuButton
               color="inherit"
               edge="start"
               onClick={toggleDrawer}
-              sx={{ mr: 2 }}
               aria-label="menu"
             >
               <MenuIcon />
-            </IconButton>
+            </MenuButton>
             )}
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{
-                display: 'block',
-                flexGrow: isTablet ? 0 : 1
-              }}
-            >
+            <Title variant="h6" component="div" isTablet={isTablet}>
               {t('appName')}
-            </Typography>
-          </Box>
+            </Title>
+          </LeftSection>
           {(!isTablet && !isMobile) && (
-            <Box>
-              <Tooltip 
+            <DesktopMenu>
+               <Tooltip 
                 title={currentTeam ? "" : "Du musst erst einem Team beitreten"}
                 arrow
                 disableHoverListener={currentTeam !== null}
@@ -134,60 +131,38 @@ function Dashboard({ user, setUser }) {
               <Button color="inherit" onClick={() => setOpenCreateDialog(true)}>
                 {t('createTeam')}
               </Button>
-              {isAdmin && ( 
+              {isAdmin && (
                 <Badge badgeContent={unreadCount} color="error">
                   <Button color="inherit" onClick={() => setOpenNotificationsDialog(true)}>
                     {t('myNotifications')}
                   </Button>
                 </Badge>
               )}
-            </Box>
-          )}
+            </DesktopMenu>
+           )}
 
           {/* Right section - always visible */}
-          <Box sx={{ display: 'flex' }}>
+          <RightSection>
             <LanguageSwitcher />
-            <IconButton 
-              color="inherit" 
-              onClick={handleSettingsClick}
-              sx={{
-                transition: 'transform 0.3s ease-in-out',
-                '&:hover': { transform: 'rotate(30deg)' },
-                animation: openSettingsModal ? 'spin 0.5s ease-in-out' : 'none',
-                '@keyframes spin': {
-                  '0%': { transform: 'rotate(0deg)' },
-                  '100%': { transform: 'rotate(180deg)' }
-                }
-              }}
-              aria-label="settings"
-            >
+            <SettingsButton animate={openSettingsModal} color="inherit" onClick={handleSettingsClick} aria-label="settings">
               <Settings />
-            </IconButton>
+            </SettingsButton>
             <IconButton color="inherit" onClick={handleLogout} aria-label="logout">
               <ExitToApp />
             </IconButton>
-          </Box>
-        </Toolbar>
-      </AppBar>
+          </RightSection>
+        </Header>
+       </AppBar>
       
       {/* Responsive Drawer/Sidebar */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
         <NavigationDrawer currentTeam={currentTeam} unreadCount={unreadCount} onMenuClick={handleMenuItemClick} />
       </Drawer>
 
-      <Container
-        maxWidth="xl"
-        sx={{
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          py: 3,
-          overflow: 'auto',
-        }}
-      >
-        <Stack spacing={3} direction={{ xs: 'column', md: 'row' }} sx={{ flexGrow: 1 }} justifyContent="space-between">
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <TimerPanel
+      <Main maxWidth="xl">
+        <Content spacing={3} direction={{ xs: 'column', md: 'row' }} justifyContent="space-between">
+          <Column>
+             <TimerPanel
               user={user}
               isStanding={isStanding}
               currentSessionTime={currentSessionTime}
@@ -197,10 +172,10 @@ function Dashboard({ user, setUser }) {
               formattedAverageTime={formattedAverageTime}
               formattedLongestTime={formattedLongestTime}
             />
-          </Box>
+          </Column>
           <DeskCalculatorPanel />
-        </Stack>
-      </Container>
+        </Content>
+      </Main>
 
       {/* Teams dialog */}
       <ResponsiveDialog open={openTeamsDialog} onClose={() => setOpenTeamsDialog(false)} maxWidth="sm">
@@ -248,7 +223,7 @@ function Dashboard({ user, setUser }) {
           <Button onClick={() => setOpenStatisticsDialog(false)}>{t('close')}</Button>
         </DialogActions>
       </ResponsiveDialog>
-    </Box>
+    </Root>
   );
 }
 
