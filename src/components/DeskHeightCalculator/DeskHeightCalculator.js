@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Typography, Box, useTheme, useMediaQuery } from '@mui/material';
+import { Typography, useTheme, useMediaQuery } from '@mui/material';
+import { Container, Preview, MobileStats, Row, CurrentBox, Form, BoldSpan } from './DeskHeightCalculator.styles';
 import useDeskHeight from '../../hooks/useDeskHeight';
 import { useTranslation } from 'react-i18next';
 import './DeskHeightCalculator.css';
@@ -20,25 +21,9 @@ const DeskHeightCalculator = () => {
   };
 
   return (
-    <Box
-      className="container"
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        
-      }}
-    >
+    <Container className="container">
       {isLargeScreen ? (
-        <Box
-          className="preview"
-          sx={{
-            flex: 1,
-            minHeight: 300,
-            overflow: 'hidden',  
-          }}
-        >
+        <Preview className="preview">
           <div className="desk">
             <div className="desk__dynamic_part">
               <div id="desk__top">
@@ -76,32 +61,30 @@ const DeskHeightCalculator = () => {
               <path d="M721.5 0.5H744L780 46L807 110M721.5 0.5L763.5 110M721.5 0.5V10L763.5 123.5M763.5 110H807M763.5 110V123.5M807 110V123.5H763.5" stroke="black" strokeMiterlimit="16" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-        </Box>
+        </Preview>
       ) : (
-      <Box sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-        <Typography variant="h6" sx={{ mb: 1 }}>{t('recommendedHeights')}</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="body1">{t('sitting')}</Typography>
-          <Typography variant="body1" fontWeight="bold">{sittingHeight.toFixed(1)} cm</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="body1">{t('standingText')}</Typography>
-          <Typography variant="body1" fontWeight="bold">{standingHeight.toFixed(1)} cm</Typography>
-        </Box>
-        <Box sx={{ mt: 2, p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+      <MobileStats>
+         <Typography variant="h6" sx={{ mb: 1 }}>{t('recommendedHeights')}</Typography>
+        <Row>
+           <Typography variant="body1">{t('sitting')}</Typography>
+           <Typography variant="body1" fontWeight="bold">{sittingHeight.toFixed(1)} cm</Typography>
+        </Row>
+        <Row>
+           <Typography variant="body1">{t('standingText')}</Typography>
+           <Typography variant="body1" fontWeight="bold">{standingHeight.toFixed(1)} cm</Typography>
+        </Row>
+        <CurrentBox>
           <Typography variant="body2" fontWeight="medium">
-            {t('currentSetting', { position: type === 0 ? t('sitting') : t('standingText') })} 
-            <span style={{ fontWeight: 'bold', marginLeft: '8px' }}>
-              {deskHeight.toFixed(1)} cm
-            </span>
+            {t('currentSetting', { position: type === 0 ? t('sitting') : t('standingText') })}
+            <BoldSpan>{deskHeight.toFixed(1)} cm</BoldSpan>
           </Typography>
-        </Box>
-      </Box>
+        </CurrentBox>
+      </MobileStats>
       )}
-      <Box className="form" sx={{ mt: 2 }}>
-        <div className="form_group">
+      <Form className="form">
+         <div className="form_group">
           <Typography component="label" htmlFor="height">{t('yourHeightLabel')}</Typography>
-          <input 
+           <input 
             type="number"
             id="height" 
             name="height" 
@@ -110,16 +93,16 @@ const DeskHeightCalculator = () => {
             min="150"
             max="205"
           />
-        </div>
-        <div className="form_group">
+         </div>
+         <div className="form_group">
           <Typography component="label" htmlFor="type">{t('positionLabel')}</Typography>
-          <select id="type" value={type} onChange={(e) => setType(Number(e.target.value))}>
+           <select id="type" value={type} onChange={(e) => setType(Number(e.target.value))}>
             <option value={0}>{t('sitting')}</option>
             <option value={1}>{t('standingText')}</option>
           </select>
-        </div>
-      </Box>
-    </Box>
+         </div>
+      </Form>
+    </Container>
   );
 };
 
