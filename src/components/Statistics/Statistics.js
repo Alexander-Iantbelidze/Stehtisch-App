@@ -1,15 +1,8 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatTime } from '../utils/statisticsUtils';
-import useTeamStatistics from '../hooks/useTeamStatistics';
-import {
-  Container,
-  Typography,
-  Select,
-  MenuItem,
-  Box,
-} from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { formatTime } from '../../utils/statisticsUtils';
+import useTeamStatistics from '../../hooks/useTeamStatistics';
+import { Typography, Select, MenuItem } from '@mui/material';
+import { Root, ControlsWrapper, TableWrapper, StyledDataGrid } from './Statistics.styles';
 
 function Statistics({ teamId }) {
   const { t } = useTranslation();
@@ -65,12 +58,12 @@ function Statistics({ teamId }) {
   ];
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Root maxWidth="xl">
       <Typography variant="h4" gutterBottom>
         {t('teamStatistics')} – {teamName}
       </Typography>
 
-      <Box sx={{ mb: 3 }}>
+      <ControlsWrapper>
         <Select value={period} onChange={(e) => setPeriod(e.target.value)}>
           {periods.map((p) => (
             <MenuItem key={p} value={p}>
@@ -78,31 +71,22 @@ function Statistics({ teamId }) {
             </MenuItem>
           ))}
         </Select>
-      </Box>
+      </ControlsWrapper>
 
-      <Box sx={{ height: 400, width: '100%' }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 25]}
-          disableColumnMenu
-          disableColumnFilter
-          disableColumnSelector
-          disableSelectionOnClick
-          loading={loading}
-          sx={{
-            '& .MuiDataGrid-cell': {
-              borderRight: '1px solid rgba(224, 224, 224, 1)',
-            },
-            '& .MuiDataGrid-columnHeader': {
-              borderRight: '1px solid rgba(224, 224, 224, 1)',
-              backgroundColor: 'rgba(0, 0, 0, 0.04)',
-            }
-          }}
+      <TableWrapper>
+        <StyledDataGrid
+           rows={rows}
+           columns={columns}
+           pageSize={5}
+           rowsPerPageOptions={[5, 10, 25]}
+           disableColumnMenu
+           disableColumnFilter
+           disableColumnSelector
+           disableSelectionOnClick
+           loading={loading}
         />
-      </Box>
-    </Container>
+      </TableWrapper>
+    </Root>
   );
 }
 

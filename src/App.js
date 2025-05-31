@@ -3,7 +3,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import Teams from './components/Teams';
 import CreateTeam from './components/CreateTeam';
 import Notifications from './components/Notifications/Notifications';
-import Statistics from './components/Statistics';
+import Statistics from './components/Statistics/Statistics';
 import UserSettings from './components/UserSettings';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import useAuth from './hooks/useAuth';

@@ -17,7 +17,7 @@ import Teams from '../Teams';
 import CreateTeam from '../CreateTeam';
 import Notifications from '../Notifications/Notifications';
 import UserSettings from '../UserSettings';
-import Statistics from '../Statistics';
+import Statistics from '../Statistics/Statistics';
 import ResponsiveDialog from '../ResponsiveDialog/ResponsiveDialog';
 import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
 import useAuth from '../../hooks/useAuth';
