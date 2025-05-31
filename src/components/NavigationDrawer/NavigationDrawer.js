@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, List, ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material';
+import { MenuList, DrawerContainer } from './NavigationDrawer.styles';
+import { ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material';
 import { BarChart as StatisticsIcon, GroupAdd as JoinTeamIcon, AddCircle as CreateTeamIcon, Notifications as NotificationsIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
@@ -15,8 +15,8 @@ function NavigationDrawer({ currentTeam, unreadCount, onMenuClick }) {
   const isAdmin = currentTeam?.adminId === undefined ? false : true;
 
   return (
-    <Box sx={{ width: 250 }} role="presentation">
-      <List sx={{ p: 0, '& .MuiListItemButton-root': { px: 2 }, '& .MuiListItemIcon-root': { minWidth: 0, mr: 2 }, '& .MuiListItemText-root': { mr: 2, whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' } }}>
+    <DrawerContainer role="presentation">
+      <MenuList>
         <ListItemButton onClick={() => onMenuClick('statistics')} disabled={!currentTeam}>
           <ListItemIcon>
             <StatisticsIcon color={currentTeam ? 'primary' : 'disabled'} />
@@ -48,8 +48,8 @@ function NavigationDrawer({ currentTeam, unreadCount, onMenuClick }) {
             <ListItemText primary={t('myNotifications')} />
           </ListItemButton>
         )}
-      </List>
-    </Box>
+      </MenuList>
+    </DrawerContainer>
   );
 }
 

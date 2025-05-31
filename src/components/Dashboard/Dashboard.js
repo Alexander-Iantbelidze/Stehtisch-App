@@ -26,7 +26,7 @@ import useSessionTimer from '../../hooks/useSessionTimer';
 import useResponsive from '../../hooks/useResponsive';
 import useStatsOverview from '../../hooks/useStatsOverview';
 import DeskCalculatorPanel from '../DeskCalculatorPanel/DeskCalculatorPanel';
-import NavigationDrawer from '../NavigationDrawer';
+import NavigationDrawer from '../NavigationDrawer/NavigationDrawer';
 import TimerPanel from '../TimerPanel';
 import {
   Root,
