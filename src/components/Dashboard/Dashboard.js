@@ -19,7 +19,7 @@ import Notifications from '../Notifications/Notifications';
 import UserSettings from '../UserSettings';
 import Statistics from '../Statistics';
 import ResponsiveDialog from '../ResponsiveDialog/ResponsiveDialog';
-import LanguageSwitcher from '../LanguageSwitcher';
+import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
 import useAuth from '../../hooks/useAuth';
 import useNotificationsCount from '../../hooks/useNotificationsCount';
 import useSessionTimer from '../../hooks/useSessionTimer';

@@ -1,4 +1,4 @@
-import Login from './components/Login';
+import Login from './components/Login/Login';
 import Dashboard from './components/Dashboard/Dashboard';
 import Teams from './components/Teams';
 import CreateTeam from './components/CreateTeam';

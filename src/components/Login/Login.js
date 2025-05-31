@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { auth, db } from '../firebase';
+import { auth, db } from '../../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { setDoc, doc, query, collection, where, getDocs } from 'firebase/firestore';
-import { Container, Box, TextField, Button, Typography, Paper } from '@mui/material';
-import SnackbarAlert from './SnackbarAlert';
-import useSnackbar from '../hooks/useSnackbar';
+import { Container, TextField, Button, Typography } from '@mui/material';
+import SnackbarAlert from '../SnackbarAlert';
+import useSnackbar from '../../hooks/useSnackbar';
+import {
+  Wrapper,
+  StyledPaper,
+  FormBox,
+  SubmitButton,
+  ForgotPasswordButton
+} from './Login.styles';
 
 function Login() {
   const { t } = useTranslation();
@@ -88,30 +95,23 @@ function Login() {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ padding: 3, width: '100%' }}>
-          <Typography component="h1" variant="h5">
-            {isSignUp ? t('signUp') : t('signIn')}
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label={t('emailAddress')}
-              name="email"
-              autoComplete="email"
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+      <Wrapper>
+        <StyledPaper elevation={3}>
+           <Typography component="h1" variant="h5">
+             {isSignUp ? t('signUp') : t('signIn')}
+           </Typography>
+          <FormBox component="form" onSubmit={handleSubmit}>
+             <TextField
+               margin="normal"
+               required
+               fullWidth
+               id="email"
+               label={t('emailAddress')}
+               name="email"
+               autoComplete="email"
+               autoFocus
+               value={email}
+               onChange={(e) => setEmail(e.target.value)}
             />
             {isSignUp && (
               <TextField
@@ -140,41 +140,39 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <Button
+            <SubmitButton
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
             >
               {isSignUp ? t('signUp') : t('signIn')}
-            </Button>
+            </SubmitButton>
             <Button
-              fullWidth
-              variant="text"
-              onClick={() => setIsSignUp(!isSignUp)}
+               fullWidth
+               variant="text"
+               onClick={() => setIsSignUp(!isSignUp)}
             >
                {isSignUp
                 ? t('alreadyRegistered')
                 : t('noAccount')}
             </Button>
             {!isSignUp && (
-              <Button
+              <ForgotPasswordButton
                 fullWidth
                 variant="text"
                 onClick={handlePasswordReset}
-                sx={{ mt: 1 }}
               >
                 {t('forgotPassword')}
-              </Button>
+              </ForgotPasswordButton>
             )}
-          </Box>
-        </Paper>
-      </Box>
-      <SnackbarAlert
-        open={openSnackbar}
-        message={snackbarMessage}
-        severity={snackbarSeverity}
-        onClose={closeSnackbar}
+          </FormBox>
+        </StyledPaper>
+      </Wrapper>
+       <SnackbarAlert
+         open={openSnackbar}
+         message={snackbarMessage}
+         severity={snackbarSeverity}
+         onClose={closeSnackbar}
       />
     </Container>
   );
