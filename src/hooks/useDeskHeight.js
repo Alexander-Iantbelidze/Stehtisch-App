@@ -2,16 +2,17 @@ import { useState, useEffect } from 'react';
 import heightRangeCM from '../utils/heightRange';
 
 /**
- * Hook to compute desk, sitting, and standing heights and update DOM for preview.
+ * Hook to compute desk, sitting, and standing heights.
  * @param {number} personHeight - User's height in cm.
  * @param {0|1} type - 0 for sitting, 1 for standing.
- * @param {boolean} isLargeScreen - Whether to apply visual preview.
- * @returns {{ deskHeight: number, sittingHeight: number, standingHeight: number }}
+ * @returns {{ deskHeight: number, sittingHeight: number, standingHeight: number, scale: number, offsetPx: number }}
  */
-function useDeskHeight(personHeight, type, isLargeScreen) {
+export default function useDeskHeight(personHeight, type) {
   const [deskHeight, setDeskHeight] = useState(56.5);
   const [sittingHeight, setSittingHeight] = useState(56.5);
   const [standingHeight, setStandingHeight] = useState(93.5);
+  const [scale, setScale] = useState(1);
+  const [offsetPx, setOffsetPx] = useState(0);
 
   useEffect(() => {
     const range = heightRangeCM.find(r => r[0] === personHeight);
@@ -23,21 +24,14 @@ function useDeskHeight(personHeight, type, isLargeScreen) {
     const targetH = type === 1 ? standH : sitH;
     setDeskHeight(targetH);
 
-    if (isLargeScreen) {
-      const minHeight = 56.5;
-      const maxHeight = targetH;
-      const diffHeight = maxHeight * 349 / minHeight - 349;
-      const scale = ((maxHeight * 349 / minHeight) * 100 / 349) / 100;
-      const legs = document.getElementById("desk__legs");
-      const deskTop = document.getElementById("desk__top");
-      const indicatorBox = document.getElementById("indicator__box");
-      if (legs) legs.style.transform = `scaleY(${scale})`;
-      if (deskTop) deskTop.style.marginTop = `-${diffHeight}px`;
-      if (indicatorBox) indicatorBox.style.height = `${scale * 100}%`;
-    }
-  }, [personHeight, type, isLargeScreen]);
+    // Compute transform scale and vertical offset for rendering
+    const minHeight = 56.5;
+    const maxHeight = targetH;
+    const newOffsetPx = maxHeight * 349 / minHeight - 349;
+    const newScale = ((maxHeight * 349 / minHeight) * 100 / 349) / 100;
+    setOffsetPx(newOffsetPx);
+    setScale(newScale);
+  }, [personHeight, type]);
 
-  return { deskHeight, sittingHeight, standingHeight };
+  return { deskHeight, sittingHeight, standingHeight, scale, offsetPx };
 }
-
-export default useDeskHeight;
