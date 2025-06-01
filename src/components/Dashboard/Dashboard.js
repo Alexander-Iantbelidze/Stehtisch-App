@@ -4,8 +4,6 @@ import {
   AppBar,
   Button,
   Badge,
-  DialogContent,
-  DialogActions,
   Tooltip,
   Drawer,
   IconButton
@@ -39,7 +37,12 @@ import {
   Content,
   Column,
   Title,
-  DesktopMenu
+  DesktopMenu,
+  DefaultDialogContent,
+  DefaultDialogActions,
+  SettingsDialogContent,
+  StatsDialogContent,
+  StatsDialogActions
 } from './Dashboard.styles';
 
 function Dashboard({ user, setUser }) {
@@ -179,49 +182,49 @@ function Dashboard({ user, setUser }) {
 
       {/* Teams dialog */}
       <ResponsiveDialog open={openTeamsDialog} onClose={() => setOpenTeamsDialog(false)} maxWidth="sm">
-        <DialogContent sx={{ p: { xs: 2, sm: 3 }, height: isMobile ? 'calc(100vh - 64px)' : 'auto', overflow: 'auto' }}>
+        <DefaultDialogContent isMobile={isMobile}>
           <Teams user={user} />
-        </DialogContent>
-        <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
+        </DefaultDialogContent>
+        <DefaultDialogActions>
           <Button onClick={() => setOpenTeamsDialog(false)}>{t('close')}</Button>
-        </DialogActions>
+        </DefaultDialogActions>
       </ResponsiveDialog>
 
       {/* CreateTeam dialog */}
       <ResponsiveDialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm">
-        <DialogContent sx={{ p: { xs: 2, sm: 3 }, height: isMobile ? 'calc(100vh - 64px)' : 'auto', overflow: 'auto' }}>
+        <DefaultDialogContent isMobile={isMobile}>
           <CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />
-        </DialogContent>
-        <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
+        </DefaultDialogContent>
+        <DefaultDialogActions>
           <Button onClick={() => setOpenCreateDialog(false)}>{t('close')}</Button>
-        </DialogActions>
+        </DefaultDialogActions>
       </ResponsiveDialog>
 
       {/* Notifications dialog */}
       <ResponsiveDialog open={openNotificationsDialog} onClose={() => setOpenNotificationsDialog(false)} maxWidth="sm">
-        <DialogContent sx={{ p: { xs: 2, sm: 3 }, height: isMobile ? 'calc(100vh - 64px)' : 'auto', overflow: 'auto' }}>
+        <DefaultDialogContent isMobile={isMobile}>
           <Notifications user={user} />
-        </DialogContent>
-        <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
+        </DefaultDialogContent>
+        <DefaultDialogActions>
           <Button onClick={() => setOpenNotificationsDialog(false)}>{t('close')}</Button>
-        </DialogActions>
+        </DefaultDialogActions>
       </ResponsiveDialog>
 
       {/* Settings modal */}
       <ResponsiveDialog open={openSettingsModal} onClose={() => setOpenSettingsModal(false)} maxWidth="sm">
-        <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
+        <SettingsDialogContent>
           <UserSettings user={user} setUser={setUser} isModal onClose={() => setOpenSettingsModal(false)} />
-        </DialogContent>
+        </SettingsDialogContent>
       </ResponsiveDialog>
 
       {/* Statistics dialog */}
       <ResponsiveDialog open={openStatisticsDialog} onClose={() => setOpenStatisticsDialog(false)} maxWidth="xl">
-        <DialogContent sx={{ p: { xs: 1, sm: 2, md: 3 }, height: isMobile ? 'calc(100vh - 64px)' : 'auto', overflow: 'auto' }}>
+        <StatsDialogContent isMobile={isMobile}>
           <Statistics user={user} teamId={currentTeam?.id} />
-        </DialogContent>
-        <DialogActions sx={{ p: { xs: 1, sm: 2 }, pt: 0 }}>
+        </StatsDialogContent>
+        <StatsDialogActions>
           <Button onClick={() => setOpenStatisticsDialog(false)}>{t('close')}</Button>
-        </DialogActions>
+        </StatsDialogActions>
       </ResponsiveDialog>
     </Root>
   );

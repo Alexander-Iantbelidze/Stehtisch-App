@@ -1,5 +1,5 @@
 import { styled } from '@mui/material/styles';
-import { Box, Toolbar, IconButton, Container, Stack, Typography } from '@mui/material';
+import { Box, Toolbar, IconButton, Container, Stack, Typography, DialogContent, DialogActions } from '@mui/material';
 
 // Root layout container
 export const Root = styled(Box)(({ theme }) => ({
@@ -79,4 +79,45 @@ export const Title = styled(Typography, {
 export const DesktopMenu = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
+}));
+
+// Default dialog content with responsive padding and dynamic height
+export const DefaultDialogContent = styled(DialogContent, { shouldForwardProp: (prop) => prop !== 'isMobile' })(
+  ({ theme, isMobile }) => ({
+    padding: theme.spacing(2),
+    [theme.breakpoints.up('sm')]: { padding: theme.spacing(3) },
+    height: isMobile ? 'calc(100vh - 64px)' : 'auto',
+    overflow: 'auto',
+  })
+);
+
+// Default dialog actions with responsive padding and zero top padding
+export const DefaultDialogActions = styled(DialogActions)(({ theme }) => ({
+  padding: theme.spacing(2),
+  [theme.breakpoints.up('sm')]: { padding: theme.spacing(3) },
+  paddingTop: 0,
+}));
+
+// Settings modal content with no padding and hidden overflow
+export const SettingsDialogContent = styled(DialogContent)(() => ({
+  padding: 0,
+  overflow: 'hidden',
+}));
+
+// Statistics dialog content with smaller responsive padding
+export const StatsDialogContent = styled(DialogContent, { shouldForwardProp: (prop) => prop !== 'isMobile' })(
+  ({ theme, isMobile }) => ({
+    padding: theme.spacing(1),
+    [theme.breakpoints.up('sm')]: { padding: theme.spacing(2) },
+    [theme.breakpoints.up('md')]: { padding: theme.spacing(3) },
+    height: isMobile ? 'calc(100vh - 64px)' : 'auto',
+    overflow: 'auto',
+  })
+);
+
+// Statistics dialog actions with smaller responsive padding and zero top padding
+export const StatsDialogActions = styled(DialogActions)(({ theme }) => ({
+  padding: theme.spacing(1),
+  [theme.breakpoints.up('sm')]: { padding: theme.spacing(2) },
+  paddingTop: 0,
 }));

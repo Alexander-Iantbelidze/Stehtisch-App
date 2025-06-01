@@ -1,5 +1,5 @@
 import { styled } from '@mui/material/styles';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 // Root container for calculator
 export const Container = styled(Box)(({ theme }) => ({
@@ -48,4 +48,9 @@ export const Form = styled(Box)(({ theme }) => ({
 export const BoldSpan = styled('span')(({ theme }) => ({
   fontWeight: 'bold',
   marginLeft: theme.spacing(1),
+}));
+
+// Mobile header for recommended heights with bottom margin
+export const MobileHeader = styled(Typography)(({ theme }) => ({
+  marginBottom: theme.spacing(1),
 }));
