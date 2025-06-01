@@ -12,7 +12,7 @@ import { ExitToApp, Settings, Menu as MenuIcon } from '@mui/icons-material';
 import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
 import Teams from '../Teams/Teams';
-import CreateTeam from '../CreateTeam';
+import CreateTeam from '../CreateTeam/CreateTeam';
 import Notifications from '../Notifications/Notifications';
 import UserSettings from '../UserSettings/UserSettings';
 import Statistics from '../Statistics/Statistics';
