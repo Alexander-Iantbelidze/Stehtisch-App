@@ -1,6 +1,6 @@
 import { Typography, TextField, Dialog, DialogTitle } from '@mui/material';
 import useCreateTeam from '../../hooks/useCreateTeam';
-import SnackbarAlert from '../SnackbarAlert';
+import SnackbarAlert from '../SnackbarAlert/SnackbarAlert';
 import {
   Container,
   StyledButton

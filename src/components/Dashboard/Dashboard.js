@@ -13,10 +13,10 @@ import {
 import { ExitToApp, Settings, Menu as MenuIcon } from '@mui/icons-material';
 import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
-import Teams from '../Teams';
+import Teams from '../Teams/Teams';
 import CreateTeam from '../CreateTeam';
 import Notifications from '../Notifications/Notifications';
-import UserSettings from '../UserSettings';
+import UserSettings from '../UserSettings/UserSettings';
 import Statistics from '../Statistics/Statistics';
 import ResponsiveDialog from '../ResponsiveDialog/ResponsiveDialog';
 import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
@@ -27,7 +27,7 @@ import useResponsive from '../../hooks/useResponsive';
 import useStatsOverview from '../../hooks/useStatsOverview';
 import DeskCalculatorPanel from '../DeskCalculatorPanel/DeskCalculatorPanel';
 import NavigationDrawer from '../NavigationDrawer/NavigationDrawer';
-import TimerPanel from '../TimerPanel';
+import TimerPanel from '../TimerPanel/TimerPanel';
 import {
   Root,
   Header,

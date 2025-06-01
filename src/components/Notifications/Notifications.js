@@ -12,7 +12,7 @@ import {
 } from './Notifications.styles';
 import { leaveOldTeam } from '../../utils/teamUtils';
 import useSnackbar from '../../hooks/useSnackbar';
-import SnackbarAlert from '../SnackbarAlert';
+import SnackbarAlert from '../SnackbarAlert/SnackbarAlert';
 
 const Notifications = ({ user }) => {
   const { t } = useTranslation();

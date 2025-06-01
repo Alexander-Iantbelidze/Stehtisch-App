@@ -1,6 +1,6 @@
-import React from 'react';
-import { Box, Typography, Stack } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { Root, StatsStack } from './StatsOverview.styles';
 
 /**
  * Displays formatted statistics overview.
@@ -8,9 +8,10 @@ import { useTranslation } from 'react-i18next';
 function StatsOverview({ formattedDailyTime, formattedAverageTime, formattedLongestTime }) {
   const { t } = useTranslation();
   return (
-    <Box sx={{ mt: 4, width: '100%' }}>
+    <Root>
       <Typography variant="h6">{t('yourStatistics')}</Typography>
-      <Stack spacing={1} sx={{ mt: 1 }}>
+
+      <StatsStack spacing={1}>
         <Typography variant="body1">
           {t('dailyStandingTime')}: {formattedDailyTime}
         </Typography>
@@ -20,8 +21,8 @@ function StatsOverview({ formattedDailyTime, formattedAverageTime, formattedLong
         <Typography variant="body1">
           {t('longestSession')}: {formattedLongestTime}
         </Typography>
-      </Stack>
-    </Box>
+      </StatsStack>
+    </Root>
   );
 }
 

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Backdrop, Snackbar, Alert, IconButton } from '@mui/material';
+import { Snackbar, Alert, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { StyledBackdrop } from './SnackbarAlert.styles';
 
 /**
  * Reusable component for displaying a Snackbar with an Alert and backdrop.
@@ -8,10 +9,7 @@ import CloseIcon from '@mui/icons-material/Close';
 function SnackbarAlert({ open, message, severity, onClose }) {
   return (
     <>
-      <Backdrop
-        open={open}
-        sx={{ zIndex: 1, backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
-      />
+      <StyledBackdrop open={open} />
       <Snackbar
         open={open}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

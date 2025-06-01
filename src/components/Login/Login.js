@@ -4,7 +4,7 @@ import { auth, db } from '../../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { setDoc, doc, query, collection, where, getDocs } from 'firebase/firestore';
 import { Container, TextField, Button, Typography } from '@mui/material';
-import SnackbarAlert from '../SnackbarAlert';
+import SnackbarAlert from '../SnackbarAlert/SnackbarAlert';
 import useSnackbar from '../../hooks/useSnackbar';
 import {
   Wrapper,

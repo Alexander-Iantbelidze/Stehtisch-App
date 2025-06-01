@@ -1,10 +1,10 @@
 import Login from './components/Login/Login';
 import Dashboard from './components/Dashboard/Dashboard';
-import Teams from './components/Teams';
+import Teams from './components/Teams/Teams';
 import CreateTeam from './components/CreateTeam';
 import Notifications from './components/Notifications/Notifications';
 import Statistics from './components/Statistics/Statistics';
-import UserSettings from './components/UserSettings';
+import UserSettings from './components/UserSettings/UserSettings';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import useAuth from './hooks/useAuth';
 

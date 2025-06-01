@@ -1,10 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, TextField, List, ListItem, Button, Typography, Tooltip } from '@mui/material';
-import useAuth from '../hooks/useAuth';
-import useSnackbar from '../hooks/useSnackbar';
-import useTeams from '../hooks/useTeams';
-import SnackbarAlert from './SnackbarAlert';
+import { TextField, List, ListItem, Tooltip, Typography } from '@mui/material';
+import { Root, TeamName, JoinButton } from './Teams.styles';
+import useAuth from '../../hooks/useAuth';
+import useSnackbar from '../../hooks/useSnackbar';
+import useTeams from '../../hooks/useTeams';
+import SnackbarAlert from '../SnackbarAlert/SnackbarAlert';
 
 const Teams = ({ user }) => {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ const Teams = ({ user }) => {
   const { teams, joinRequestsMap, handleJoin } = useTeams(search, user);
 
   return (
-    <Box>
+    <Root>
       <Typography variant="h4">{t('teamsHeader')}</Typography>
       <TextField
         label={t('searchTeam')}
@@ -33,32 +34,23 @@ const Teams = ({ user }) => {
           return (
             <ListItem key={team.id} divider>
               <Tooltip title={team.name}>
-                <Typography
-                  noWrap
-                  sx={{
-                    maxWidth: 150,
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
+                <TeamName noWrap>
                   {team.name}
-                </Typography>
+                </TeamName>
               </Tooltip>
-              <Button
+              <JoinButton
                 variant="contained"
                 color="primary"
                 onClick={() => handleJoin(team.id)}
                 disabled={disabledButton}
-                sx={{ ml: 'auto' }}
               >
-                {isCurrentTeam 
-                  ? t('currentTeam') 
-                  : requestStatus === 'pending' 
-                    ? t('pendingRequest')
-                    : t('joinTeamBtn')
+                {isCurrentTeam
+                  ? t('currentTeam')
+                  : requestStatus === 'pending'
+                  ? t('pendingRequest')
+                  : t('joinTeamBtn')
                 }
-              </Button>
+              </JoinButton>
             </ListItem>
           );
         })}
@@ -69,7 +61,7 @@ const Teams = ({ user }) => {
         severity={snackbarSeverity}
         onClose={closeSnackbar}
       />
-    </Box>
+    </Root>
   );
 };
 

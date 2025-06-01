@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { auth, db } from '../firebase';
+import { useState } from 'react';
+import { auth, db } from '../../firebase';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { doc, updateDoc, deleteDoc, collection, query, where, getDocs, getDoc } from 'firebase/firestore';
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { TextField, Button, Typography, Paper, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Divider, IconButton } from '@mui/material';
+import { TextField, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { leaveOldTeam } from '../utils/teamUtils';
-import useSnackbar from '../hooks/useSnackbar';
-import SnackbarAlert from './SnackbarAlert';
+import { leaveOldTeam } from '../../utils/teamUtils';
+import useSnackbar from '../../hooks/useSnackbar';
+import SnackbarAlert from '../SnackbarAlert/SnackbarAlert';
+import {
+  Root,
+  SettingsPaper,
+  HeaderContainer,
+  HeaderTitle,
+  CloseButton,
+  DividerStyled,
+  Section,
+  ChangeButton
+} from './UserSettings.styles';
 
 function UserSettings({ user, setUser, isModal = false, onClose }) {
   const { t } = useTranslation();
@@ -115,38 +125,22 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
 
   return (
     <>
-      <Box sx={{ 
-        mt: isModal ? 0 : 5, 
-        display: 'flex', 
-        justifyContent: 'center',
-        width: '100%' 
-      }}>
-        <Paper sx={{ 
-          p: 3, 
-          width: '100%', 
-          maxWidth: 600,
-          boxShadow: isModal ? 'none' : undefined,
-          borderRadius: isModal ? 0 : undefined
-        }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 500 }}>
+      <Root isModal={isModal}>
+        <SettingsPaper isModal={isModal}>
+          <HeaderContainer>
+            <HeaderTitle variant="h5">
               {t('accountSettings')}
-            </Typography>
+            </HeaderTitle>
             {isModal && (
-              <IconButton 
-                onClick={onClose} 
-                size="small" 
-                color="primary"
-                sx={{ '&:hover': { transform: 'scale(1.1)' } }}
-              >
+              <CloseButton onClick={onClose} size="small" color="primary">
                 <CancelIcon />
-              </IconButton>
+              </CloseButton>
             )}
-          </Box>
-          
-          <Divider sx={{ mb: 2 }} />
-          
-          <Box sx={{ mb: 2 }}>
+          </HeaderContainer>
+
+          <DividerStyled />
+
+          <Section>
             <TextField
               label={t('newUsernameLabel')}
               variant="outlined"
@@ -155,18 +149,17 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
               onChange={(e) => setNewUsername(e.target.value)}
               size={isModal ? "small" : "medium"}
             />
-            <Button 
-              variant="contained" 
-              sx={{ mt: 1 }} 
+            <ChangeButton
+              variant="contained"
               onClick={handleUpdateUsername}
               size={isModal ? "small" : "medium"}
             >
               {t('changeUsername')}
-            </Button>
-          </Box>
-          
+            </ChangeButton>
+          </Section>
+
           {showPassword && (
-          <Box sx={{ mb: 2 }}>
+          <Section>
             <TextField
               label={t('password')}
               type="password"
@@ -177,21 +170,21 @@ function UserSettings({ user, setUser, isModal = false, onClose }) {
               autoFocus
               size={isModal ? "small" : "medium"}
             />
-          </Box>
+          </Section>
           )}
-          
-          <Box>
-            <Button 
-              variant="contained" 
-              color="error" 
+
+          <Section>
+            <Button
+              variant="contained"
+              color="error"
               onClick={handleDeleteAccount}
               size={isModal ? "small" : "medium"}
             >
               {t('deleteAccount')}
             </Button>
-          </Box>
-        </Paper>
-      </Box>
+          </Section>
+        </SettingsPaper>
+      </Root>
 
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
         <DialogTitle>{t('deleteAccountTitle')}</DialogTitle>
