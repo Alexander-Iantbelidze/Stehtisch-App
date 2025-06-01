@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import useStandingStats from './useStandingStats';
 import { formatTime } from '../utils/statisticsUtils';
 
@@ -9,11 +8,7 @@ import { formatTime } from '../utils/statisticsUtils';
  */
 function useStatsOverview(userId) {
   const { dailyStandingTime, averageStandingTime, longestSessionTime, fetchStats } = useStandingStats(userId);
-
-  // Refresh stats on mount
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+  // Note: stats are already fetched on mount by useStandingStats, so no duplicate effect here
 
   const formattedDailyTime = formatTime(dailyStandingTime);
   const formattedAverageTime = formatTime(averageStandingTime);
