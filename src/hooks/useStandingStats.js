@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 // Custom hook to manage and fetch standing statistics for a user
 export default function useStandingStats(userId) {
@@ -8,14 +8,13 @@ export default function useStandingStats(userId) {
   const [averageStandingTime, setAverageStandingTime] = useState(0);
   const [longestSessionTime, setLongestSessionTime] = useState(0);
 
-  const fetchStats = useCallback(async () => {
-    try {
-      const q = query(
-        collection(db, 'standingTimes'),
-        where('userId', '==', userId)
-      );
-      const querySnapshot = await getDocs(q);
-
+  // Subscribe to standingTimes collection for real-time updates
+  useEffect(() => {
+    const q = query(
+      collection(db, 'standingTimes'),
+      where('userId', '==', userId)
+    );
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       let total = 0;
       let dailyTotal = 0;
       let sessionCount = 0;
@@ -24,32 +23,22 @@ export default function useStandingStats(userId) {
       today.setHours(0, 0, 0, 0);
 
       querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const duration = data.duration;
-        const timestamp = data.startTime.toDate();
-
+        const { duration, startTime } = doc.data();
+        const timestamp = startTime.toDate();
         total += duration;
         sessionCount += 1;
-        if (duration > longestSession) {
-          longestSession = duration;
-        }
-        if (timestamp >= today) {
-          dailyTotal += duration;
-        }
+        if (duration > longestSession) longestSession = duration;
+        if (timestamp >= today) dailyTotal += duration;
       });
 
-      const avgTime = sessionCount > 0 ? total / sessionCount : 0;
       setDailyStandingTime(dailyTotal);
-      setAverageStandingTime(avgTime);
+      setAverageStandingTime(sessionCount > 0 ? total / sessionCount : 0);
       setLongestSessionTime(longestSession);
-    } catch (error) {
-      console.error('Error fetching standing stats:', error);
-    }
+    }, (error) => {
+      console.error('Error syncing standing stats:', error);
+    });
+    return () => unsubscribe();
   }, [userId]);
 
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
-
-  return { dailyStandingTime, averageStandingTime, longestSessionTime, fetchStats };
+  return { dailyStandingTime, averageStandingTime, longestSessionTime };
 }

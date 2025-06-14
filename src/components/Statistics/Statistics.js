@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatTime } from '../../utils/statisticsUtils';
 import useTeamStatistics from '../../hooks/useTeamStatistics';
@@ -10,8 +11,8 @@ function Statistics({ teamId }) {
 
   const periods = ['daily', 'weekly', 'monthly', 'yearly'];
 
-  // Column definitions for the DataGrid
-  const columns = [
+  // Column definitions for the DataGrid, memoized to avoid unnecessary recalcs
+  const columns = useMemo(() => [
     { 
       field: 'rank', 
       headerName: t('rank'), 
@@ -55,7 +56,7 @@ function Statistics({ teamId }) {
       sortable: false,
       type: 'number'
     }
-  ];
+  ], [t]);
 
   return (
     <Root maxWidth="xl">

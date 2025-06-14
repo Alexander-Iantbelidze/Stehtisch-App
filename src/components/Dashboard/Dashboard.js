@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AppBar,
@@ -61,21 +61,19 @@ function Dashboard({ user, setUser }) {
   const [openStatisticsDialog, setOpenStatisticsDialog] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Stable callbacks for closing dialogs
+  const handleCloseTeams = useCallback(() => setOpenTeamsDialog(false), []);
+  const handleCloseCreate = useCallback(() => setOpenCreateDialog(false), []);
+  const handleCloseNotifications = useCallback(() => setOpenNotificationsDialog(false), []);
+  const handleCloseSettings = useCallback(() => setOpenSettingsModal(false), []);
+  const handleCloseStatistics = useCallback(() => setOpenStatisticsDialog(false), []);
+  const toggleDrawer = useCallback(() => setDrawerOpen(open => !open), []);
+  const handleSettingsClick = useCallback(() => setOpenSettingsModal(true), []);
+  const handleLogout = useCallback(() => signOut(auth), []);
+
   // Responsive breakpoints via custom hook
   const { isMobile, isTablet, isLargeScreen } = useResponsive();
   const isAdmin = currentTeam?.adminId === user.uid;
-
-  const handleLogout = () => {
-    signOut(auth);
-  };
-
-  const handleSettingsClick = () => {
-    setOpenSettingsModal(true);
-  };
-
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
-  };
 
   const handleMenuItemClick = (action) => {
     setDrawerOpen(false);
@@ -181,49 +179,49 @@ function Dashboard({ user, setUser }) {
       </Main>
 
       {/* Teams dialog */}
-      <ResponsiveDialog open={openTeamsDialog} onClose={() => setOpenTeamsDialog(false)} maxWidth="sm">
+      <ResponsiveDialog open={openTeamsDialog} onClose={handleCloseTeams} maxWidth="sm">
         <DefaultDialogContent isMobile={isMobile}>
           <Teams user={user} />
         </DefaultDialogContent>
         <DefaultDialogActions>
-          <Button onClick={() => setOpenTeamsDialog(false)}>{t('close')}</Button>
+          <Button onClick={handleCloseTeams}>{t('close')}</Button>
         </DefaultDialogActions>
       </ResponsiveDialog>
 
       {/* CreateTeam dialog */}
-      <ResponsiveDialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm">
+      <ResponsiveDialog open={openCreateDialog} onClose={handleCloseCreate} maxWidth="sm">
         <DefaultDialogContent isMobile={isMobile}>
           <CreateTeam user={user} currentTeam={currentTeam} setCurrentTeam={setCurrentTeam} />
         </DefaultDialogContent>
         <DefaultDialogActions>
-          <Button onClick={() => setOpenCreateDialog(false)}>{t('close')}</Button>
+          <Button onClick={handleCloseCreate}>{t('close')}</Button>
         </DefaultDialogActions>
       </ResponsiveDialog>
 
       {/* Notifications dialog */}
-      <ResponsiveDialog open={openNotificationsDialog} onClose={() => setOpenNotificationsDialog(false)} maxWidth="sm">
+      <ResponsiveDialog open={openNotificationsDialog} onClose={handleCloseNotifications} maxWidth="sm">
         <DefaultDialogContent isMobile={isMobile}>
           <Notifications user={user} />
         </DefaultDialogContent>
         <DefaultDialogActions>
-          <Button onClick={() => setOpenNotificationsDialog(false)}>{t('close')}</Button>
+          <Button onClick={handleCloseNotifications}>{t('close')}</Button>
         </DefaultDialogActions>
       </ResponsiveDialog>
 
       {/* Settings modal */}
-      <ResponsiveDialog open={openSettingsModal} onClose={() => setOpenSettingsModal(false)} maxWidth="sm">
+      <ResponsiveDialog open={openSettingsModal} onClose={handleCloseSettings} maxWidth="sm">
         <SettingsDialogContent>
-          <UserSettings user={user} setUser={setUser} isModal onClose={() => setOpenSettingsModal(false)} />
+          <UserSettings user={user} setUser={setUser} isModal onClose={handleCloseSettings} />
         </SettingsDialogContent>
       </ResponsiveDialog>
 
       {/* Statistics dialog */}
-      <ResponsiveDialog open={openStatisticsDialog} onClose={() => setOpenStatisticsDialog(false)} maxWidth="xl">
+      <ResponsiveDialog open={openStatisticsDialog} onClose={handleCloseStatistics} maxWidth="xl">
         <StatsDialogContent isMobile={isMobile}>
           <Statistics user={user} teamId={currentTeam?.id} />
         </StatsDialogContent>
         <StatsDialogActions>
-          <Button onClick={() => setOpenStatisticsDialog(false)}>{t('close')}</Button>
+          <Button onClick={handleCloseStatistics}>{t('close')}</Button>
         </StatsDialogActions>
       </ResponsiveDialog>
     </Root>

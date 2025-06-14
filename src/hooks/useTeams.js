@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, doc, getDoc } from 'firebase/firestore';
 import useSnackbar from './useSnackbar';
 
 /**
@@ -14,28 +14,39 @@ function useTeams(search, user) {
   const [joinRequestsMap, setJoinRequestsMap] = useState({});
   const { showAlert } = useSnackbar();
 
+  // Debounce search term to avoid firing a query on every keystroke
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   useEffect(() => {
-    async function fetchJoinRequests() {
-      const q = query(collection(db, 'joinRequests'), where('userId', '==', user.uid));
-      const snapshot = await getDocs(q);
+    const handler = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  // Subscribe to user's join requests for real-time updates
+  useEffect(() => {
+    const q = query(collection(db, 'joinRequests'), where('userId', '==', user.uid));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const tempMap = {};
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         tempMap[data.teamId] = data.status;
       });
       setJoinRequestsMap(tempMap);
-    }
-    fetchJoinRequests();
+    }, (error) => console.error('Error syncing joinRequests:', error));
+    return () => unsubscribe();
   }, [user.uid]);
 
+  // Subscribe to team search results for real-time updates
   useEffect(() => {
-    async function fetchTeams() {
-      const q = query(
-        collection(db, 'teams'),
-        where('name', '>=', search),
-        where('name', '<=', search + '\uf8ff')
-      );
-      const snapshot = await getDocs(q);
+    if (!debouncedSearch) {
+      setTeams([]);
+      return;
+    }
+    const q = query(
+      collection(db, 'teams'),
+      where('name', '>=', debouncedSearch),
+      where('name', '<=', debouncedSearch + '\uf8ff')
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const list = [];
       snapshot.forEach((docSnap) => {
         if (docSnap.id !== user.uid) {
@@ -43,10 +54,9 @@ function useTeams(search, user) {
         }
       });
       setTeams(list);
-    }
-    if (search) fetchTeams();
-    else setTeams([]);
-  }, [search, user.uid]);
+    }, (error) => console.error('Error syncing teams:', error));
+    return () => unsubscribe();
+  }, [debouncedSearch, user.uid]);
 
   const handleJoin = async (teamId) => {
     try {
