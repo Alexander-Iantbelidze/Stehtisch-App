@@ -69,10 +69,11 @@ export const Column = styled(Box)(({ theme }) => ({
 
 // Title with responsive flex-grow
 export const Title = styled(Typography, {
-  shouldForwardProp: (prop) => prop !== 'isTablet',
-})(({ theme, isTablet }) => ({
+  shouldForwardProp: (prop) => prop !== 'isTablet' && prop !== 'isMobile',
+})(({ theme, isTablet, isMobile }) => ({
   display: 'block',
   flexGrow: isTablet ? 0 : 1,
+  fontSize: isMobile ? '1rem' : undefined, // Kleinere Font-Größe für Mobile
 }));
 
 // Wrapper for desktop menu items

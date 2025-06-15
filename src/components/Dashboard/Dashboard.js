@@ -105,7 +105,7 @@ function Dashboard({ user, setUser }) {
               <MenuIcon />
             </MenuButton>
             )}
-            <Title variant="h6" component="div" isTablet={isTablet}>
+            <Title variant="h6" component="div" isTablet={isTablet} isMobile={isMobile}>
               {t('appName')}
             </Title>
           </LeftSection>
