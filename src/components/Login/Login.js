@@ -5,13 +5,15 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswor
 import { setDoc, doc, query, collection, where, getDocs } from 'firebase/firestore';
 import { Container, TextField, Button, Typography } from '@mui/material';
 import SnackbarAlert from '../SnackbarAlert/SnackbarAlert';
+import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
 import useSnackbar from '../../hooks/useSnackbar';
 import {
   Wrapper,
   StyledPaper,
   FormBox,
   SubmitButton,
-  ForgotPasswordButton
+  ForgotPasswordButton,
+  LanguageSwitcherContainer
 } from './Login.styles';
 
 function Login() {
@@ -39,7 +41,7 @@ function Login() {
         const usernameSnapshot = await getDocs(usernameQuery);
 
         if (!usernameSnapshot.empty) {
-          showAlert('Dieser Benutzername wird bereits verwendet!', 'error');
+          showAlert(t('usernameTaken'), 'error');
           return;
         }
 
@@ -96,6 +98,9 @@ function Login() {
   return (
     <Container component="main" maxWidth="xs">
       <Wrapper>
+        <LanguageSwitcherContainer>
+          <LanguageSwitcher />
+        </LanguageSwitcherContainer>
         <StyledPaper elevation={3}>
            <Typography component="h1" variant="h5">
              {isSignUp ? t('signUp') : t('signIn')}

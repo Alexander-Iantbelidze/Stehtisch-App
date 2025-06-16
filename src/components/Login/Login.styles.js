@@ -7,6 +7,7 @@ export const Wrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
+  position: 'relative', // Für absolute Positionierung des LanguageSwitchers
 }));
 
 // Styled Paper container for the form
@@ -29,4 +30,12 @@ export const SubmitButton = styled(Button)(({ theme }) => ({
 // Forgot password button with top margin
 export const ForgotPasswordButton = styled(Button)(({ theme }) => ({
   marginTop: theme.spacing(1),
+}));
+
+// Container for the language switcher positioned in top right
+export const LanguageSwitcherContainer = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  right: 0,
+  zIndex: theme.zIndex.appBar,
 }));

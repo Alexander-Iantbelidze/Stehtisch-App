@@ -112,7 +112,7 @@ function Dashboard({ user, setUser }) {
           {(!isTablet && !isMobile) && (
             <DesktopMenu>
                <Tooltip 
-                title={currentTeam ? "" : "Du musst erst einem Team beitreten"}
+                title={currentTeam ? "" : t('mustJoinTeam')}
                 arrow
                 disableHoverListener={currentTeam !== null}
               >

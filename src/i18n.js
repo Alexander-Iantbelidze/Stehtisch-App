@@ -29,6 +29,7 @@ const resources = {
       "forgotPassword": "Forgot password?",
       "usernameNoEmail": "Username must not be an email address.",
       "usernameTaken": "This username is already taken!",
+      "mustJoinTeam": "You must join a team first",
       "invalidEmail": "Invalid email address.",
       "invalidCredential": "Email/password is incorrect or not registered.",
       "weakPassword": "Password must be at least 6 characters.",
@@ -67,6 +68,7 @@ const resources = {
       "rejectSuccess": "Join request rejected!",
       "rejectError": "Error rejecting the request.",
       "teamNotExist": "Team does not exist anymore.",
+      "joinRequestMessage": "{{username}} wants to join your team.",
       // UserSettings
       "newUsernameLabel": "New username",
       "changeUsername": "Change username",
@@ -129,6 +131,8 @@ const resources = {
       "noAccount": "Noch kein Konto? Registrieren",
       "forgotPassword": "Passwort vergessen?",
       "usernameNoEmail": "Benutzername darf keine E-Mail-Adresse sein.",
+      "usernameTaken": "Dieser Benutzername wird bereits verwendet!",
+      "mustJoinTeam": "Du musst erst einem Team beitreten",
       "invalidEmail": "Ungültige E-Mail-Adresse.",
       "invalidCredential": "E-Mail/Passwort ist falsch oder nicht registriert.",
       "weakPassword": "Passwort muss mindestens 6 Zeichen lang sein.",
@@ -167,6 +171,7 @@ const resources = {
       "rejectSuccess": "Beitritt abgelehnt!",
       "rejectError": "Fehler beim Ablehnen der Anfrage.",
       "teamNotExist": "Team existiert nicht mehr.",
+      "joinRequestMessage": "{{username}} möchte Ihrem Team beitreten.",
       // UserSettings
       "newUsernameLabel": "Neuer Benutzername",
       "changeUsername": "Benutzernamen ändern",

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, doc, getDoc } from 'firebase/firestore';
 import useSnackbar from './useSnackbar';
@@ -10,6 +11,7 @@ import useSnackbar from './useSnackbar';
  * @returns {object} - teams list, joinRequestsMap, handleJoin function.
  */
 function useTeams(search, user) {
+  const { t } = useTranslation();
   const [teams, setTeams] = useState([]);
   const [joinRequestsMap, setJoinRequestsMap] = useState({});
   const { showAlert } = useSnackbar();
@@ -72,16 +74,16 @@ function useTeams(search, user) {
       await addDoc(collection(db, 'notifications'), {
         userId: teamAdminId,
         senderId: user.uid,
-        message: `${user.username} möchte Ihrem Team beitreten.`,
+        message: t('joinRequestMessage', { username: user.username }),
         read: false,
         joinRequestId: joinReqRef.id,
         teamId,
         createdAt: new Date(),
       });
       setJoinRequestsMap((prev) => ({ ...prev, [teamId]: 'pending' }));
-      showAlert('Beitrittsanfrage gesendet!', 'info');
+      showAlert(t('requestSent'), 'info');
     } catch (error) {
-      showAlert('Fehler beim Senden der Beitrittsanfrage. Bitte versuchen Sie es erneut.', 'error');
+      showAlert(t('joinError'), 'error');
     }
   };
 
