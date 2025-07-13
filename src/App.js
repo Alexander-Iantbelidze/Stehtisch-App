@@ -12,7 +12,12 @@ function App() {
   const { user, currentTeam, setUser, setCurrentTeam } = useAuth();
 
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <div className="App">
         {user ? (
           <Routes>
