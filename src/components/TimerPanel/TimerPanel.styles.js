@@ -1,5 +1,5 @@
 import { styled } from '@mui/material/styles';
-import { Paper, Box, Button } from '@mui/material';
+import { Paper, Box, Button, Typography } from '@mui/material';
 
 // Root Paper container for the timer panel
 export const Root = styled(Paper)(({ theme }) => ({
@@ -55,3 +55,10 @@ export const Ripple = styled(Box)(({ theme }) => ({
     '100%': { transform: 'scale(1.5)', opacity: 0 },
   },
 }));
+
+export const WelcomeText = styled(Typography)({
+  maxWidth: 600,
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+});

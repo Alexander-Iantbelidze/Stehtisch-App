@@ -1,10 +1,9 @@
-import React from 'react';
-import { Typography } from '@mui/material';
+import { Typography, Tooltip } from '@mui/material';
 import { PlayArrow, Stop } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { formatTime } from '../../utils/statisticsUtils';
 import StatsOverview from '../StatsOverview/StatsOverview';
-import { Root, CircleContainer, StartStopButton, Ripple } from './TimerPanel.styles';
+import { Root, CircleContainer, StartStopButton, Ripple, WelcomeText } from './TimerPanel.styles';
 
 function TimerPanel({ user, isStanding, currentSessionTime, toggleStanding, isLargeScreen,
   formattedDailyTime, formattedAverageTime, formattedLongestTime }) {
@@ -12,9 +11,11 @@ function TimerPanel({ user, isStanding, currentSessionTime, toggleStanding, isLa
 
   return (
     <Root elevation={3}>
-      <Typography variant="h4" gutterBottom>
+      <Tooltip title={t('welcome', { username: user.username })} arrow>
+      <WelcomeText variant="h4" gutterBottom>
         {t('welcome', { username: user.username })}
-      </Typography>
+      </WelcomeText>
+      </Tooltip>
       <CircleContainer isLargeScreen={isLargeScreen}>
         {isStanding && <Ripple />}
         <Typography variant="h5" color="text.secondary">

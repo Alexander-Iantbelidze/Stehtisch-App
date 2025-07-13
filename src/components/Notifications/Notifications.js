@@ -36,6 +36,20 @@ const Notifications = ({ user }) => {
           try {
             const joinReqSnap = await getDoc(doc(db, 'joinRequests', notifData.joinRequestId));
             if (joinReqSnap.exists() && joinReqSnap.data().status === 'pending') {
+              // Aktuellen Benutzernamen vom Sender laden
+              if (notifData.senderId) {
+                try {
+                  const senderSnap = await getDoc(doc(db, 'users', notifData.senderId));
+                  if (senderSnap.exists()) {
+                    const currentUsername = senderSnap.data().username;
+                    // Nachricht mit aktuellem Benutzernamen erstellen
+                    notifData.message = t('joinRequestMessage', { username: currentUsername });
+                  }
+                } catch (error) {
+                  console.error('Error fetching sender username:', error);
+                  // Fallback: ursprüngliche Nachricht verwenden
+                }
+              }
               notifList.push(notifData);
             }
           } catch (error) {
@@ -51,7 +65,10 @@ const Notifications = ({ user }) => {
       setNotifications(notifList);
     });
     return () => unsubscribe();
-  }, [user.uid]);  const handleAccept = async (notif) => {
+  }, [user.uid, t]);  
+  
+  
+const handleAccept = async (notif) => {
     try {
       // 1. JoinRequest als akzeptiert markieren
       const joinReqRef = doc(db, 'joinRequests', notif.joinRequestId);
